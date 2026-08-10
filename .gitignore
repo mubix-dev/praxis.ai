@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+/frontend/node_modules/
+/backend/node_modules/
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+*.env
+
+# Production Build Directories
+/frontend/build/
+/frontend/dist/
+/backend/dist/
+
+# Debug and Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE, Editors, and OS Files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Testing and Coverage
+/backend/coverage/
+/client/coverage/
+.nyc_output/
+
