@@ -1,6 +1,5 @@
 import express from "express"
 import dotenv from "dotenv"
-import cors from "cors"
 import connectDb from "./db/db.js"
 import router from "./routes/auth.routes.js"
 dotenv.config()
@@ -17,11 +16,6 @@ app.use("/",router)
 app.get("/",(req,res)=>{
     return res.status(200).json({message:"Auth is running!"})
 })
-app.use(cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
-    credentials :true
-}))
-
 
 connectDb()
 .then(()=>{
