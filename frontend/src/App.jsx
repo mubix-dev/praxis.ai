@@ -1,16 +1,9 @@
 import React from 'react'
 import Home from './pages/Home'
-import { useEffect } from 'react'
-import getCurrentUser from './features/getCurrentUser'
+import useGetCurrUser from './hooks/useGetCurrUser'
 
 function App() {
-  useEffect(()=>{
-    const getUser = async()=>{
-      await getCurrentUser()
-    }
-
-    getUser()
-  },[])
+  useGetCurrUser()
   return (
     <>
       <Home/>
