@@ -7,12 +7,10 @@ const userSchema = new Schema({
     },
     name:{
         type:String,
-        trim:true
     },
     email:{
         type:String,
         unique:true,
-        trim:true
     },
     avatar:{
         type:String
