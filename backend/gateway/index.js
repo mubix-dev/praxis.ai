@@ -5,6 +5,7 @@ import proxy from "express-http-proxy"
 import cookieParser from "cookie-parser"
 import isAuth from "./middlewares/auth.middleware.js"
 import getCurrentUser from "./controllers/user.controller.js"
+import { proxyWithHeaders } from "./utils/proxyWithHeaders.js"
 dotenv.config()
 
 const PORT = process.env.PORT || 3000
@@ -21,6 +22,8 @@ app.use(cors({
 
 app.use("/api/auth",proxy(process.env.AUTH_SERVICE))
 app.get("/api/me",isAuth,getCurrentUser)
+app.use("/api/chat",isAuth,proxyWithHeaders(process.env.CHAT_SERVICE))
+
 app.get("/",(req,res)=>{
     return res.status(200).json({message:"Gateway is running!"})
 })
