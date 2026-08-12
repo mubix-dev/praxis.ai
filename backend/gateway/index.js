@@ -23,6 +23,8 @@ app.use(cors({
 app.use("/api/auth",proxy(process.env.AUTH_SERVICE))
 app.get("/api/me",isAuth,getCurrentUser)
 app.use("/api/chat",isAuth,proxyWithHeaders(process.env.CHAT_SERVICE))
+app.use("/api/chat",isAuth,proxy(process.env.AGENT_SERVICE))
+
 
 app.get("/",(req,res)=>{
     return res.status(200).json({message:"Gateway is running!"})
