@@ -1,6 +1,7 @@
 import express from "express"
 import dotenv from "dotenv"
 import connectDb from "./db/db.js"
+import { router } from "./graph/agent.router.js"
 dotenv.config()
 
 const PORT = process.env.PORT || 3003
@@ -8,7 +9,7 @@ const PORT = process.env.PORT || 3003
 const app = express()
 
 app.use(express.json())
-
+app.use("/",router)
 
 app.get("/",(req,res)=>{
     return res.status(200).json({message:"Agent service is running!"})
