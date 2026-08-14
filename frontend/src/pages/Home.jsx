@@ -6,7 +6,7 @@ import { FcGoogle } from "react-icons/fc";
 import { useDispatch, useSelector } from "react-redux";
 import { setUserData } from "../redux/userSlice";
 import Sidebar from "../components/Sidebar";
-import ChatArea from "../components/ChatArea";
+import ChatArea from "../components/chat/ChatArea";
 import Artifact from "../components/Artifact";
 
 function Home() {
