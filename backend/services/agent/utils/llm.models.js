@@ -6,14 +6,14 @@ const groq = new ChatGroq({
 })
 
 const gemini = new ChatGoogleGenerativeAI({
-    model: "gemini-2.5-flash",
+    model: "gemini-3.5-flash-lite",
 })
 
 export const getllmModel = (agent)=>{
     switch (agent) {
         case "chat":
-            return gemini;
-    
+            return gemini; 
+
         default:
             return gemini;
     }
