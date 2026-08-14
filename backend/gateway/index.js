@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser"
 import isAuth from "./middlewares/auth.middleware.js"
 import getCurrentUser from "./controllers/user.controller.js"
 import { proxyWithHeaders } from "./utils/proxyWithHeaders.js"
+import morgan from "morgan"
 dotenv.config()
 
 const PORT = process.env.PORT || 3000
@@ -14,6 +15,7 @@ const app = express()
 
 app.use(express.json())
 app.use(cookieParser())
+app.use(morgan("dev"))
 
 app.use(cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173",
