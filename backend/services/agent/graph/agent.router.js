@@ -3,6 +3,12 @@ import { getllmModel } from "../utils/llm.models.js";
 const AGENTS = ["chat", "search", "coding", "pdf", "ppt", "vision"];
 
 export const router = async (state) => {
+  if(state.agent && state.agent !== "auto"){
+    return {
+      ...state,
+      agent:state.agent
+    }
+  }
   const llm = getllmModel("router");
 
   const prompt = `You are a routing system for a multi-agent AI platform. Your only job is to read the user's query and decide which specialized agent should handle it.
