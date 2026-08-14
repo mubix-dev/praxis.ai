@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Navbar from "./Navbar";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
@@ -14,6 +14,7 @@ const suggestions = [
 ];
 
 function ChatArea() {
+  const [suggestion,setSuggestion] = useState("")
   useGetAllMessages();
   const { selectedConversation } = useSelector((state) => state.conversation);
   const { messages } = useSelector((state) => state.message);
@@ -35,6 +36,7 @@ function ChatArea() {
             {suggestions.map((s) => (
               <div
                 key={s.text}
+                onClick={()=>setSuggestion(s.text)}
                 className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-300 bg-white/3 border border-white/8 hover:bg-white/5 hover:border-white/15 cursor-pointer transition-colors"
               >
                 <s.icon size={15} className={s.color} />
@@ -46,7 +48,7 @@ function ChatArea() {
       ) : (
         <MessageList />
       )}
-      <MessageInput />
+      <MessageInput suggestion={suggestion} />
     </div>
   );
 }
