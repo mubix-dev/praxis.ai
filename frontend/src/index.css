@@ -31,6 +31,15 @@ html {
   background: rgba(255, 255, 255, 0.28);
 }
 
+/* fully hidden scrollbar (scrolling still works) */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-14px); }
