@@ -7,16 +7,18 @@ function useGetAllMessages() {
   const dispatch = useDispatch();
   const { userData } = useSelector(state => state.user);
   const {selectedConversation} = useSelector(state=>state.conversation)
+  const {thinking} = useSelector(state=>state.message)
   useEffect(() => {
     if (!userData) return;
     if(!selectedConversation) return
+    if(thinking) return 
     const getALLMessages = async () => {
       const data = await getMessages(selectedConversation?._id);
       dispatch(setMessages(data));
     };
 
     getALLMessages();
-  }, [selectedConversation]);
+  }, [selectedConversation, thinking]);
 }
 
 export default useGetAllMessages;
