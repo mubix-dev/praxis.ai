@@ -1,9 +1,13 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import MessageBox from './MessageBox'
 
 function MessageList() {
-  const { messages,thinking } = useSelector((state) => state.message)
+  const { messages, thinking } = useSelector((state) => state.message)
+  const bottomRef = useRef(null)
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView()
+  }, [messages, thinking])
 
   return (
     <div className="flex-1 w-full overflow-y-auto no-scrollbar">
@@ -19,6 +23,9 @@ function MessageList() {
             </div>
           </div>
         )}
+
+        {/* scroll anchor */}
+        <div ref={bottomRef} />
       </div>
     </div>
   )
