@@ -3,7 +3,8 @@ import { Paperclip, Mic, SendHorizontal } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux';
 import { sendMessage } from '../../features/sendMessage';
 import { addMessage, setThinking } from '../../redux/messageSlice';
-
+import { addConversation, setSelectedConversation } from '../../redux/conversationSlice.js';
+import {createConversation} from "../../features/createConversation.js"
 function MessageInput() {
   const { selectedConversation } = useSelector((state) => state.conversation);
   const [text, setText] = useState("")
@@ -12,9 +13,17 @@ function MessageInput() {
   const handleSendMessage = async()=>{
     dispatch(setThinking(true)) 
     try {
+      let conversation = selectedConversation
+      if(!conversation){
+        const newConversation = await createConversation()
+        dispatch(addConversation(newConversation))
+        dispatch(setSelectedConversation(newConversation))
+        conversation = newConversation
+      }
+
       dispatch(addMessage({role:"user",content:text}))
       setText("")
-      const data = await sendMessage(text,selectedConversation?._id)
+      const data = await sendMessage(text,conversation?._id)
       dispatch(setThinking(false)) 
       dispatch(addMessage({role:"assistant",content:data}))
     } catch (error) {
