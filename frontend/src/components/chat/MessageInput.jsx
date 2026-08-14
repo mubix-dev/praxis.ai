@@ -1,14 +1,18 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Paperclip, Mic, SendHorizontal } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux';
 import { sendMessage } from '../../features/sendMessage';
 import { addMessage, setThinking } from '../../redux/messageSlice';
 import { addConversation, setSelectedConversation } from '../../redux/conversationSlice.js';
 import {createConversation} from "../../features/createConversation.js"
-function MessageInput() {
+function MessageInput({suggestion}) {
   const { selectedConversation } = useSelector((state) => state.conversation);
   const [text, setText] = useState("")
   const dispatch = useDispatch()
+
+  useEffect(() => {
+    if (suggestion) setText(suggestion)
+  }, [suggestion])
 
   const handleSendMessage = async()=>{
     dispatch(setThinking(true)) 
