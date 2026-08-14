@@ -115,7 +115,7 @@ function Sidebar() {
               className="w-full py-2 flex justify-center items-center gap-1 rounded-lg bg-white/5 hover:bg-white/7 text-sm cursor-pointer"
               onClick={handleCreateConversation}
             >
-              <PlusIcon size={20} />
+              <PlusIcon size={17} />
               <p className="font-medium">New Chat</p>
             </button>
           </div>
