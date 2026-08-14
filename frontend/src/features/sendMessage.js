@@ -1,7 +1,7 @@
 import api from "../utils/axios"
-export const sendMessage = async(prompt,conversationId)=>{
+export const sendMessage = async(prompt,conversationId,agent)=>{
     try {
-        const {data} = await api.post("api/agent/chat",{prompt,conversationId})
+        const {data} = await api.post("api/agent/chat",{prompt,conversationId,agent})
         return data
     } catch (error) {
         console.log(error)
