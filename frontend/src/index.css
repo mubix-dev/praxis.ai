@@ -1,1 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Schibsted Grotesk", "Segoe UI", system-ui, sans-serif;
+}
