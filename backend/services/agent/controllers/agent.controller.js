@@ -5,13 +5,13 @@ import redis from "../../../shared/redis/redis.js"
 import { getllmModel } from "../utils/llm.models.js"
 export const agent = async(req,res)=>{
     try {
-        const {prompt,conversationId} = req.body
+        const {prompt,conversationId,agent} = req.body
         if(!prompt || !conversationId){
             return res.status(400).json({message:"prompt and conversationId are required"})
         }
 
         const result = await graph.invoke({
-            prompt,conversationId
+            prompt,conversationId,agent
         })
 
         let response = result.aiResponse || "This specialist is still being built — try asking a general question for now!"
