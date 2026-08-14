@@ -1,4 +1,6 @@
+import { AIMessage, HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { getllmModel } from "../utils/llm.models.js";
+import { getMemory } from "../utils/memory.js";
 
 export const chatAgent = async (state) => {
   const llm = getllmModel("chat");
@@ -19,16 +21,23 @@ Honesty:
 
 Remember: the user chose Praxis to save time. Make every reply feel effortless to read.`;
 
-  const response = await llm.invoke([
-    {
-      role: "system",
-      content: sysPrompt,
-    },
-    {
-      role: "human",
-      content: state.prompt,
-    },
-  ]);
+  const history = (await getMemory(state.conversationId)) || []
+
+  const messages = [
+    new SystemMessage(sysPrompt)
+  ]
+
+  history.map((msg)=>{
+    if(msg?.role == "user"){
+      messages.push(new HumanMessage(msg?.content))
+    }
+    if(msg?.role == "assistant"){
+      messages.push(new AIMessage(msg?.content))
+    }
+  })
+
+  messages.push(new HumanMessage(state.prompt))
+  const response = await llm.invoke(messages);
 
   return {
     ...state,
