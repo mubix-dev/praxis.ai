@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Paperclip, Mic, SendHorizontal } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux';
 import { sendMessage } from '../../features/sendMessage';
-import { addMessage } from '../../redux/messageSlice';
+import { addMessage, setThinking } from '../../redux/messageSlice';
 
 function MessageInput() {
   const { selectedConversation } = useSelector((state) => state.conversation);
@@ -10,20 +10,22 @@ function MessageInput() {
   const dispatch = useDispatch()
 
   const handleSendMessage = async()=>{
-
+    dispatch(setThinking(true)) 
     try {
       dispatch(addMessage({role:"user",content:text}))
       setText("")
       const data = await sendMessage(text,selectedConversation?._id)
+      dispatch(setThinking(false)) 
       dispatch(addMessage({role:"assistant",content:data}))
     } catch (error) {
+      dispatch(setThinking(false)) 
       console.log(error)
       setText("")
     }
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-4 pb-4 shrink-0">
+    <div className="w-full max-w-3xl mx-auto py-4 px-4 pb-4 shrink-0">
       <div className="flex items-end gap-1 px-2 py-2 rounded-2xl bg-white/5 border border-white/8 focus-within:border-white/15">
 
         <button title="Attach file" className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 cursor-pointer">
