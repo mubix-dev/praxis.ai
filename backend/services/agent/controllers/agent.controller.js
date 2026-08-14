@@ -1,5 +1,7 @@
 import axios from "axios"
 import { graph } from "../graph/agent.workflow.js"
+import { addMessage } from "../utils/memory.js"
+import redis from "../../../shared/redis/redis.js"
 export const agent = async(req,res)=>{
     try {
         const {prompt,conversationId} = req.body
@@ -7,22 +9,23 @@ export const agent = async(req,res)=>{
             return res.status(400).json({message:"prompt and conversationId are required"})
         }
 
+        const result = await graph.invoke({
+            prompt,conversationId
+        })
+
+        let response = result.aiResponse || "This specialist is still being built — try asking a general question for now!"
+
+        if(typeof response !== "string"){
+            response = JSON.stringify(response)
+        }
+        await addMessage(conversationId,"user",prompt)
+        await addMessage(conversationId,"assistant",response)
+
         await axios.post(`${process.env.CHAT_SERVICE}/messages`,{
             conversationId,
             role:"user",
             content:prompt
         })
-
-        const result = await graph.invoke({
-            prompt,conversationId
-        })
-        console.log("agent result — agent:", result.agent, "| aiResponse type:", typeof result.aiResponse)
-
-        let response = result.aiResponse || "This specialist is still being built — try asking a general question for now!"
-        if(typeof response !== "string"){
-            response = JSON.stringify(response)
-        }
-
         await axios.post(`${process.env.CHAT_SERVICE}/messages`,{
             conversationId,
             role:"assistant",
