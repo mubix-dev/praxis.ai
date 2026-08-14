@@ -23,6 +23,7 @@ function Sidebar() {
     try {
       const data = await createConversation();
       dispatch(addConversation(data));
+      dispatch(setSelectedConversation(data))
     } catch (error) {
       console.log(error);
     }
