@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Coins, MessageSquare, PanelLeftClose, PanelLeftOpen, PlusIcon, User } from "lucide-react";
+import { Coins, MessageSquare, MoreHorizontal, PanelLeftClose, PanelLeftOpen, Pencil, PlusIcon, Trash2, User } from "lucide-react";
 import { createConversation } from "../features/createConversation";
+import { deleteConversation } from "../features/deleteConversation";
+import { renameConversation } from "../features/renameConversation";
 import {
   addConversation,
   setSelectedConversation,
+  removeConversation,
+  updateConversationTitle,
 } from "../redux/conversationSlice";
 import api from "../utils/axios";
 import { setUserData } from "../redux/userSlice";
@@ -13,6 +17,17 @@ function Sidebar() {
   const { userData } = useSelector((state) => state.user);
   const [open, setOpen] = useState(window.innerWidth >= 768);
   const [avatarError, setAvatarError] = useState(false);
+  const [menuId, setMenuId] = useState(null);
+  const [confirmId, setConfirmId] = useState(null);
+  const [renameId, setRenameId] = useState(null);
+  const [renameText, setRenameText] = useState("");
+
+  useEffect(() => {
+    if (!menuId) return;
+    const close = () => setMenuId(null);
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
+  }, [menuId]);
   const dispatch = useDispatch();
 
   const { conversations, selectedConversation } = useSelector(
@@ -54,6 +69,85 @@ function Sidebar() {
           onClick={() => setOpen(false)}
           className="fixed inset-0 z-30 bg-black/60 md:hidden"
         />
+      )}
+
+      {/* rename conversation */}
+      {renameId && (
+        <div
+          onClick={() => setRenameId(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-80 bg-[#13151c] border border-white/8 rounded-2xl p-6 flex flex-col gap-4"
+          >
+            <h3 className="text-sm font-semibold text-slate-100">Rename conversation</h3>
+            <input
+              autoFocus
+              value={renameText}
+              onChange={(e) => setRenameText(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm outline-none focus:border-indigo-400/40"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setRenameId(null)}
+                className="px-3 py-1.5 rounded-lg text-xs text-slate-300 bg-white/5 hover:bg-white/10 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={!renameText.trim()}
+                onClick={async () => {
+                  const ok = await renameConversation(renameId, renameText.trim());
+                  if (ok)
+                    dispatch(updateConversationTitle({ conversationId: renameId, title: renameText.trim() }));
+                  setRenameId(null);
+                }}
+                className="px-3 py-1.5 rounded-lg text-xs text-white bg-indigo-500 hover:bg-indigo-400 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* delete confirmation */}
+      {confirmId && (
+        <div
+          onClick={() => setConfirmId(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-80 bg-[#13151c] border border-white/8 rounded-2xl p-6 flex flex-col gap-4"
+          >
+            <div>
+              <h3 className="text-sm font-semibold text-slate-100">Delete conversation?</h3>
+              <p className="text-xs text-slate-500 mt-1">
+                This will permanently delete the conversation and all its messages.
+              </p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setConfirmId(null)}
+                className="px-3 py-1.5 rounded-lg text-xs text-slate-300 bg-white/5 hover:bg-white/10 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  const ok = await deleteConversation(confirmId);
+                  if (ok) dispatch(removeConversation(confirmId));
+                  setConfirmId(null);
+                }}
+                className="px-3 py-1.5 rounded-lg text-xs text-white bg-red-500/80 hover:bg-red-500 cursor-pointer"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <div
@@ -131,14 +225,52 @@ function Sidebar() {
                   return (
                     <div
                       key={conv._id}
-                      className={`px-3 py-2 rounded-lg text-sm cursor-pointer flex items-center gap-2 ${isActive ? "bg-indigo-500/15 text-indigo-100 hover:bg-indigo-500/20" : " text-slate-300 hover:bg-white/5"}`}
+                      className={`group relative px-3 py-2 rounded-lg text-sm cursor-pointer flex items-center gap-2 ${isActive ? "bg-indigo-500/15 text-indigo-100 hover:bg-indigo-500/20" : " text-slate-300 hover:bg-white/5"}`}
                       onClick={() => {
                         dispatch(setSelectedConversation(conv));
                         if (window.innerWidth < 768) setOpen(false);
                       }}
                     >
                       <MessageSquare size={14} className="shrink-0 text-slate-600 opacity-35" />
-                      <span className="truncate">{conv.title}</span>
+                      <span className="truncate flex-1">{conv.title}</span>
+
+                      {/* 3-dot menu button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMenuId(menuId === conv._id ? null : conv._id);
+                        }}
+                        className={`shrink-0 text-slate-500 hover:text-white cursor-pointer ${menuId === conv._id ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                      >
+                        <MoreHorizontal size={14} />
+                      </button>
+
+                      {/* dropdown */}
+                      {menuId === conv._id && (
+                        <div className="absolute right-2 top-8 z-20 bg-[#13151c] border border-white/10 rounded-lg shadow-lg p-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setMenuId(null);
+                              setRenameId(conv._id);
+                              setRenameText(conv.title);
+                            }}
+                            className="flex items-center gap-2 px-3 py-1.5 text-xs text-slate-300 hover:bg-white/5 w-full cursor-pointer rounded-sm"
+                          >
+                            <Pencil size={12} /> Rename
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setMenuId(null);
+                              setConfirmId(conv._id);
+                            }}
+                            className="flex items-center gap-2 px-3 py-1.5 text-xs text-red-400 hover:bg-white/5 w-full cursor-pointer rounded-sm"
+                          >
+                            <Trash2 size={12} /> Delete
+                          </button>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
