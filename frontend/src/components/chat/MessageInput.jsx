@@ -52,7 +52,7 @@ function MessageInput({ suggestion }) {
       setText("");
       const data = await sendMessage(text, conversation?._id,agent);
       dispatch(setThinking(false));
-      dispatch(addMessage({ role: "assistant", content: data?.answer, images:data?.images  }));
+      dispatch(addMessage({ role: "assistant", content: data?.answer, images:data?.images, artifact:data?.artifact }));
     } catch (error) {
       dispatch(setThinking(false));
       console.log(error);
