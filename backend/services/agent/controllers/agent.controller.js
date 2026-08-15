@@ -24,7 +24,7 @@ export const agent = async(req,res)=>{
             response.answer = JSON.stringify(response.answer)
         }
         await addMessage(conversationId,"user",prompt)
-        await addMessage(conversationId,"assistant",response.answer)
+        await addMessage(conversationId,"assistant",response.answer,response.artifact)
 
         await axios.post(`${process.env.CHAT_SERVICE}/messages`,{
             conversationId,
@@ -35,7 +35,8 @@ export const agent = async(req,res)=>{
             conversationId,
             role:"assistant",
             content:response.answer,
-            images:response.images
+            images:response.images,
+            artifact:response.artifact
         })
 
         return res.status(200).json(response)
