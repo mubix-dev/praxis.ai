@@ -23,9 +23,16 @@ const conversationSlice = createSlice({
       if (state.selectedConversation?._id === conversationId)
         state.selectedConversation.title = title;
     },
+    removeConversation: (state, action) => {
+      state.conversations = state.conversations.filter(
+        (c) => c._id !== action.payload,
+      );
+      if (state.selectedConversation?._id === action.payload)
+        state.selectedConversation = null;
+    },
   },
 });
 
-export const { setConversations, addConversation, setSelectedConversation,updateConversationTitle } =
+export const { setConversations, addConversation, setSelectedConversation,updateConversationTitle, removeConversation } =
   conversationSlice.actions;
 export default conversationSlice.reducer;
