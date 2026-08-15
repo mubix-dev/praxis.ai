@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Coins, MessageSquare, MoreHorizontal, PanelLeftClose, PanelLeftOpen, Pencil, PlusIcon, Trash2, User } from "lucide-react";
+import { Coins, LogOut, MessageSquare, MoreHorizontal, PanelLeftClose, PanelLeftOpen, Pencil, PlusIcon, Settings, Trash2, User } from "lucide-react";
 import { createConversation } from "../features/createConversation";
 import { deleteConversation } from "../features/deleteConversation";
 import { renameConversation } from "../features/renameConversation";
@@ -21,13 +21,17 @@ function Sidebar() {
   const [confirmId, setConfirmId] = useState(null);
   const [renameId, setRenameId] = useState(null);
   const [renameText, setRenameText] = useState("");
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
-    if (!menuId) return;
-    const close = () => setMenuId(null);
+    if (!menuId && !settingsOpen) return;
+    const close = () => {
+      setMenuId(null);
+      setSettingsOpen(false);
+    };
     window.addEventListener("click", close);
     return () => window.removeEventListener("click", close);
-  }, [menuId]);
+  }, [menuId, settingsOpen]);
   const dispatch = useDispatch();
 
   const { conversations, selectedConversation } = useSelector(
@@ -304,9 +308,29 @@ function Sidebar() {
                 Free plan
               </span>
             </div>
-            <button className="text-xs text-slate-400 hover:text-white cursor-pointer" onClick={handleLogout}>
-              Logout
-            </button>
+            <div className="relative">
+              <button
+                title="Settings"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSettingsOpen(!settingsOpen);
+                }}
+                className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 cursor-pointer"
+              >
+                <Settings size={16} />
+              </button>
+
+              {settingsOpen && (
+                <div className="absolute bottom-10 right-0 z-20 bg-[#13151c] border border-white/10 rounded-lg shadow-lg p-1">
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs text-red-400 hover:bg-white/5 w-full cursor-pointer whitespace-nowrap rounded-sm"
+                  >
+                    <LogOut size={12} /> Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
