@@ -38,6 +38,13 @@ Remember: the user chose Praxis to save time. Make every reply feel effortless t
   const history = (await getMemory(state.conversationId)) || [];
 
   let finalSysPrompt = sysPrompt;
+
+  const lastArtifact = [...history].reverse().find((m) => m.artifact)?.artifact;
+  if (lastArtifact) {
+    finalSysPrompt += `\n\nThe user's current code project (built earlier in this conversation): "${lastArtifact.title}" (${lastArtifact.framework}). When they mention "the code", "the html", etc., they mean these files:\n` +
+      lastArtifact.files.map((f) => `--- ${f.path} ---\n${f.content}`).join("\n\n");
+  }
+
   if (state.searchResults) {
     finalSysPrompt += `\n\nLive web search results relevant to the user's question:\n\n${state.searchResults}\n\nUse these results to answer accurately and mention sources when useful. If the results don't cover the question, say so instead of guessing and do not mention internal tools.`;
   }
