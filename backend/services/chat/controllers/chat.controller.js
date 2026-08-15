@@ -121,3 +121,21 @@ export const getALLMessages = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const deleteConversation = async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+
+    const conversation = await Conversation.findByIdAndDelete(conversationId);
+    if (!conversation) {
+      return res.status(404).json({ message: "Conversation not found" });
+    }
+
+    await Message.deleteMany({ conversationId });
+
+    return res.status(200).json({ message: "Conversation deleted" });
+  } catch (error) {
+    console.error("deleteConversation error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
