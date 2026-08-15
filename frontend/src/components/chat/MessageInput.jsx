@@ -61,9 +61,9 @@ function MessageInput({ suggestion }) {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto py-4 px-4 pb-4 shrink-0">
+    <div className="w-full mx-auto flex flex-col items-center py-4 px-4 pb-4 shrink-0 shadow-2xl shadow-black">
 
-      <div className="flex flex-wrap items-center gap-1.5 mb-2">
+      <div className="w-full max-w-3xl flex flex-wrap items-center gap-1.5 mb-2">
         {agents.map((a) => (
           <button
             key={a.name}
@@ -80,7 +80,7 @@ function MessageInput({ suggestion }) {
         ))}
       </div>
 
-      <div className="flex items-end gap-1 px-2 py-2 rounded-2xl bg-white/5 border border-white/8 focus-within:border-white/15">
+      <div className="w-full max-w-3xl flex items-end gap-1 px-2 py-2 rounded-2xl bg-white/5 border border-white/8 focus-within:border-white/15">
         <button
           title="Attach file"
           className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 cursor-pointer"
