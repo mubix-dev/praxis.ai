@@ -16,7 +16,8 @@ export const agent = async(req,res)=>{
 
         let response = {
             answer:result.aiResponse || "This specialist is still being built — try asking a general question for now!",
-            images : result.images
+            images : result.images,
+            artifact : result.artifact || null
         }
 
         if(typeof response.answer !== "string"){
