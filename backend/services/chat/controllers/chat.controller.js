@@ -73,7 +73,7 @@ export const updateConversationTitle = async (req, res) => {
 
 export const createMessage = async (req, res) => {
   try {
-    const { conversationId, role, content,images } = req.body;
+    const { conversationId, role, content, images, artifact } = req.body;
 
     if (!conversationId || !role || !content) {
       return res.status(400).json({ message: "Incomplete Information" });
@@ -93,7 +93,8 @@ export const createMessage = async (req, res) => {
       conversationId,
       role,
       content,
-      images
+      images,
+      artifact
     });
 
     return res.status(201).json(message);
