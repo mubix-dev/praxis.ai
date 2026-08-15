@@ -31,7 +31,7 @@ function MessageInput({ suggestion }) {
   }, [suggestion]);
 
   const handleSendMessage = async () => {
-    dispatch(setThinking(true));
+    dispatch(setThinking(agent)); 
     try {
       let conversation = selectedConversation;
       if (!conversation) {
