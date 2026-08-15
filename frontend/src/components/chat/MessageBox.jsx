@@ -155,4 +155,6 @@ function MessageBox({ message }) {
   )
 }
 
-export default MessageBox
+// memo: a message's content never changes after render — skip re-rendering
+// unchanged bubbles when thinking/loading/other messages update
+export default React.memo(MessageBox)
