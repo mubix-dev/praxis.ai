@@ -17,11 +17,11 @@ function ChatArea() {
   const [suggestion,setSuggestion] = useState("")
   useGetAllMessages();
   const { selectedConversation } = useSelector((state) => state.conversation);
-  const { messages } = useSelector((state) => state.message);
+  const { messages, loadingMessages } = useSelector((state) => state.message);
   return (
     <div className="flex flex-col justify-between items-center flex-1 h-full min-w-0">
       {selectedConversation && <Navbar />}
-      {messages?.length === 0 || !selectedConversation ? (
+      {!selectedConversation || (messages?.length === 0 && !loadingMessages) ? (
         <div className="flex-1 w-full flex flex-col items-center justify-center gap-6 px-6 text-center">
           <div>
             <h2 className="text-3xl font-medium tracking-[0.35em] text-slate-100">
