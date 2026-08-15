@@ -14,13 +14,16 @@ export const agent = async(req,res)=>{
             prompt,conversationId,agent
         })
 
-        let response = result.aiResponse || "This specialist is still being built — try asking a general question for now!"
+        let response = {
+            answer:result.aiResponse || "This specialist is still being built — try asking a general question for now!",
+            images : result.images
+        }
 
-        if(typeof response !== "string"){
-            response = JSON.stringify(response)
+        if(typeof response.answer !== "string"){
+            response.answer = JSON.stringify(response.answer)
         }
         await addMessage(conversationId,"user",prompt)
-        await addMessage(conversationId,"assistant",response)
+        await addMessage(conversationId,"assistant",response.answer)
 
         await axios.post(`${process.env.CHAT_SERVICE}/messages`,{
             conversationId,
@@ -30,7 +33,8 @@ export const agent = async(req,res)=>{
         await axios.post(`${process.env.CHAT_SERVICE}/messages`,{
             conversationId,
             role:"assistant",
-            content:response
+            content:response.answer,
+            images:response.images
         })
 
         return res.status(200).json(response)
