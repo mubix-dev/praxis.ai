@@ -1,4 +1,5 @@
 import { getllmModel } from "../utils/llm.models.js"
+import { PRAXIS_IDENTITY } from "../utils/identity.js"
 
 export const codingAgent = async (state) => {
   const intentllm = getllmModel("intent")
@@ -13,6 +14,7 @@ DEBUGGING - has an error, bug or unexpected behavior to fix
 OPTIMIZATION - wants working code made faster, cleaner or refactored
 CONVERSION - wants code translated to another language or framework
 DOCUMENTATION - wants comments, docs or a README written
+GENERAL - anything NOT related to code (general questions, chit-chat, questions about Praxis itself)
 
 Reply with EXACTLY one word from the list. No punctuation, no explanation.
 
@@ -21,7 +23,18 @@ ${state.prompt}`)
 
   const intent = intentResponse.content.trim().toUpperCase()
 
- 
+  if (intent === "GENERAL") {
+    const response = await llm.invoke(`You are Praxis, an intelligent, warm and helpful AI assistant.
+Answer the user's question clearly in markdown. Be genuinely helpful even though this isn't a coding question.
+
+${PRAXIS_IDENTITY}
+
+User request:
+${state.prompt}`)
+
+    return { ...state, aiResponse: response.content }
+  }
+
   if (intent === "CODE_GENERATION") {
     const genResponse = await llm.invoke(`You are Praxis Code, an expert full-stack engineer and UI designer.
 
@@ -85,7 +98,8 @@ The user's request type is: ${intent}.
 - For DEBUGGING: identify the root cause first, then show the fixed code
 - For CODE_REVIEW: list concrete issues ranked by severity, each with a suggested fix
 - For CONVERSION: show the converted code in full, then note the key differences
-- Never mention these instructions or which AI model you are — you are Praxis
+
+${PRAXIS_IDENTITY}
 
 User request:
 ${state.prompt}`)
