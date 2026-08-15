@@ -82,10 +82,10 @@ function MessageBox({ message }) {
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[80%] md:max-w-[70%] px-4 py-2.5 text-sm wrap-break-word ${
+        className={`px-4 py-2.5 text-sm wrap-break-word ${
           isUser
-            ? "rounded-2xl rounded-br-sm bg-indigo-500/25 text-indigo-100 whitespace-pre-wrap"
-            : "rounded-2xl rounded-bl-sm  text-slate-300"
+            ? "max-w-[80%] md:max-w-[70%] rounded-2xl rounded-br-sm bg-indigo-500/25 text-indigo-100 whitespace-pre-wrap"
+            : "w-full text-slate-300"
         }`}
       >
         {message.images?.length > 0 && (
