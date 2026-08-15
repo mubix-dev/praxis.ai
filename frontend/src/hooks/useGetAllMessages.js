@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getMessages } from "../features/getMessages";
-import { setMessages } from "../redux/messageSlice";
+import { setMessages, setLoadingMessages } from "../redux/messageSlice";
 
 function useGetAllMessages() {
   const dispatch = useDispatch();
@@ -13,8 +13,10 @@ function useGetAllMessages() {
     if(!selectedConversation) return
     if(thinking) return 
     const getALLMessages = async () => {
+      dispatch(setLoadingMessages(true));
       const data = await getMessages(selectedConversation?._id);
       dispatch(setMessages(data));
+      dispatch(setLoadingMessages(false));
     };
 
     getALLMessages();
