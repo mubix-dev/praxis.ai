@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
 import Markdown from "react-markdown"
 import remarkGfm from "remark-gfm"
-import { X, Copy, Check } from 'lucide-react'
+import { useDispatch } from 'react-redux'
+import { setOpenArtifact } from '../../redux/messageSlice'
+import { X, Copy, Check, Code2, ChevronRight } from 'lucide-react'
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism"
 
@@ -78,6 +80,7 @@ const mdComponents = {
 function MessageBox({ message }) {
   const isUser = message.role === "user"
   const [preview, setPreview] = useState(null)
+  const dispatch = useDispatch()
 
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
@@ -109,6 +112,23 @@ function MessageBox({ message }) {
           <Markdown remarkPlugins={[remarkGfm]} components={mdComponents}>
             {message.content}
           </Markdown>
+        )}
+
+        {/* artifact card — click to open the panel */}
+        {message.artifact && (
+          <button
+            onClick={() => dispatch(setOpenArtifact(message.artifact))}
+            className="mt-2 w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white/3 border border-white/10 hover:border-indigo-400/40 hover:bg-white/5 text-left cursor-pointer transition-colors"
+          >
+            <div className="w-9 h-9 rounded-lg bg-indigo-500/15 flex items-center justify-center shrink-0">
+              <Code2 size={16} className="text-indigo-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-slate-200 truncate">{message.artifact.title}</p>
+              <p className="text-xs text-slate-500">Click to view code & preview</p>
+            </div>
+            <ChevronRight size={16} className="text-slate-500 shrink-0" />
+          </button>
         )}
       </div>
 
