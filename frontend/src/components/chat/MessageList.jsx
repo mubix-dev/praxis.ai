@@ -6,7 +6,7 @@ function MessageList() {
   const { messages, thinking } = useSelector((state) => state.message)
   const bottomRef = useRef(null)
   useEffect(() => {
-    bottomRef.current?.scrollIntoView()
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages, thinking])
 
   return (
