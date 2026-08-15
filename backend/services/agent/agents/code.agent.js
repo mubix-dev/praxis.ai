@@ -68,15 +68,18 @@ Return ONLY valid JSON — no markdown fences, no text before or after — in ex
   "title": "short name of what you built",
   "framework": "html | react | vue | nextjs | ...",
   "files": [
-    { "path": "index.html", "language": "html", "content": "full file content" },
-    { "path": "style.css",  "language": "css",  "content": "full file content" },
-    { "path": "script.js",  "language": "javascript", "content": "full file content" }
+    { "path": "filename.ext", "language": "html|css|javascript|jsx|...", "content": "full file content" }
   ],
-  "preview": "ONE self-contained HTML document string that runs the app inside an iframe: inline the CSS in a <style> tag and the JS in a <script> tag. For framework apps, provide a CDN-based standalone equivalent when feasible, else an empty string.",
+  "preview": "ONE self-contained HTML document string that runs the app inside an iframe: inline the CSS in a <style> tag and the JS in a <script> tag. For framework apps, provide a CDN-based standalone equivalent ONLY if it will genuinely work (e.g. React via unpkg UMD + babel-standalone). If a fully working preview is not possible, set preview to an empty string — never output a broken or partial preview.",
   "explanation": "2-4 sentences of markdown: what was built and how to use it"
 }
 
-files schema (every entry): { "path": string (filename with extension), "language": string (html|css|javascript|jsx|ts|...), "content": string (the COMPLETE file) } — one entry per file, in the order they should be read.
+File naming rules:
+- Default stack (no framework requested): exactly index.html, style.css, script.js
+- React: conventional React names — App.jsx, App.css, components/TodoItem.jsx etc. (jsx extension, PascalCase components)
+- Other frameworks: their own conventional file names and structure — NEVER fall back to index.html/style.css/script.js names for framework code
+
+files schema (every entry): { "path": string (filename with extension matching the language), "language": string (html|css|javascript|jsx|ts|vue|...), "content": string (the COMPLETE file) } — one entry per file, in the order they should be read.
 Escape all quotes and newlines correctly so the JSON parses.
 ${artifactContext ? "\nIf the user is asking to MODIFY the current project below, return the FULL updated files (all of them, complete), keeping everything that wasn't asked to change." + artifactContext : ""}
 
