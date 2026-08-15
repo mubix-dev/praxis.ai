@@ -1,9 +1,18 @@
 import { getllmModel } from "../utils/llm.models.js"
 import { PRAXIS_IDENTITY } from "../utils/identity.js"
+import { getMemory } from "../utils/memory.js"
 
 export const codingAgent = async (state) => {
   const intentllm = getllmModel("intent")
   const llm = getllmModel("coding")
+
+  const history = (await getMemory(state.conversationId)) || []
+  const lastArtifact = [...history].reverse().find((m) => m.artifact)?.artifact
+
+  const artifactContext = lastArtifact
+    ? `\n\nThe user's current project (built earlier in this conversation): "${lastArtifact.title}" (${lastArtifact.framework})\n` +
+      lastArtifact.files.map((f) => `--- ${f.path} ---\n${f.content}`).join("\n\n")
+    : ""
 
   const intentResponse = await intentllm.invoke(`You are an intent classifier for a coding assistant.
 Classify the user's request into exactly one of:
@@ -69,6 +78,7 @@ Return ONLY valid JSON — no markdown fences, no text before or after — in ex
 
 files schema (every entry): { "path": string (filename with extension), "language": string (html|css|javascript|jsx|ts|...), "content": string (the COMPLETE file) } — one entry per file, in the order they should be read.
 Escape all quotes and newlines correctly so the JSON parses.
+${artifactContext ? "\nIf the user is asking to MODIFY the current project below, return the FULL updated files (all of them, complete), keeping everything that wasn't asked to change." + artifactContext : ""}
 
 User request:
 ${state.prompt}`)
@@ -98,6 +108,7 @@ The user's request type is: ${intent}.
 - For DEBUGGING: identify the root cause first, then show the fixed code
 - For CODE_REVIEW: list concrete issues ranked by severity, each with a suggested fix
 - For CONVERSION: show the converted code in full, then note the key differences
+${artifactContext ? "\nWhen the user refers to \"the code\", \"the html\", etc., they mean their current project below." + artifactContext : ""}
 
 ${PRAXIS_IDENTITY}
 
