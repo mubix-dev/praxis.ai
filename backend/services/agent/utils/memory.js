@@ -23,16 +23,16 @@ export const getMemory = async (conversationId) => {
     }
 }
 
-export const addMessage = async (conversationId, role, content) => {
+export const addMessage = async (conversationId, role, content, artifact = null) => {
     try {
         const key = `messages-${conversationId}`
-        const cached = await redis.get(key)          
+        const cached = await redis.get(key)
         const messages = cached ? JSON.parse(cached) : []
 
-        messages.push({ role, content })
+        messages.push(artifact ? { role, content, artifact } : { role, content })
 
         await redis.set(key, JSON.stringify(messages.slice(-20)), "EX", TTL)
     } catch (error) {
-        console.log("addMessage error:", error.message)  
+        console.log("addMessage error:", error.message)
     }
 }
