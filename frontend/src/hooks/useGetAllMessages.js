@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { getMessages } from "../features/getMessages";
 import { setMessages, setLoadingMessages } from "../redux/messageSlice";
 
@@ -8,15 +8,21 @@ function useGetAllMessages() {
   const { userData } = useSelector(state => state.user);
   const {selectedConversation} = useSelector(state=>state.conversation)
   const {thinking} = useSelector(state=>state.message)
+  const lastConvRef = useRef(null);
+
   useEffect(() => {
     if (!userData) return;
     if(!selectedConversation) return
-    if(thinking) return 
+    if(thinking) return
+
+    const isNewConversation = lastConvRef.current !== selectedConversation._id;
+    lastConvRef.current = selectedConversation._id;
+
     const getALLMessages = async () => {
-      dispatch(setLoadingMessages(true));
+      if (isNewConversation) dispatch(setLoadingMessages(true));
       const data = await getMessages(selectedConversation?._id);
       dispatch(setMessages(data));
-      dispatch(setLoadingMessages(false));
+      if (isNewConversation) dispatch(setLoadingMessages(false));
     };
 
     getALLMessages();
