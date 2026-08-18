@@ -197,7 +197,7 @@ function Sidebar() {
         <div className={`w-64 h-full flex flex-col transition-opacity duration-150 ${open ? "opacity-100 delay-150" : "md:opacity-0 md:pointer-events-none"}`}>
 
           <div className="p-4 flex items-center justify-between">
-            <img src="/logo.svg" alt="PraxisAI" className="h-20 w-auto" />
+            <img src="/logo-static.svg" alt="PraxisAI" className="h-20 w-auto" />
             <button
               onClick={() => setOpen(false)}
               className="p-2 rounded-lg hover:bg-white/10 text-slate-400 cursor-pointer"
