@@ -101,7 +101,7 @@ function MessageBox({ message }) {
                   loading='lazy'
                   onError={(e) => e.currentTarget.remove()}
                   onClick={() => setPreview(img)}
-                  className="w-32 h-24 object-cover rounded-lg border border-white/10 hover:opacity-80 cursor-pointer"
+                  className={`${message.images.length === 1 ? "w-60 h-60": "w-32 h-24"} object-cover rounded-lg border border-white/10 hover:opacity-80 cursor-pointer`}
                 />
             ))}
           </div>
