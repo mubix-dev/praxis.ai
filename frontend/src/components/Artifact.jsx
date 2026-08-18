@@ -6,6 +6,21 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { setOpenArtifact } from '../redux/messageSlice'
 
+// memoized: tokenizes once per file, never re-renders on view/tab/copy state changes
+const CodeFile = React.memo(function CodeFile({ file }) {
+  return (
+    <SyntaxHighlighter
+      language={file.language}
+      wrapLongLines
+      style={oneDark}
+      showLineNumbers
+      customStyle={{ margin: 0, minHeight: '100%', fontSize: '12px', background: '#0a0c10' }}
+    >
+      {file.content || ''}
+    </SyntaxHighlighter>
+  )
+})
+
 function Artifact() {
   const { openArtifact: artifact } = useSelector((state) => state.message)
   const dispatch = useDispatch()
@@ -13,11 +28,13 @@ function Artifact() {
   const [view, setView] = useState('preview')
   const [fileIndex, setFileIndex] = useState(0)
   const [copied, setCopied] = useState(false)
+  const [ready, setReady] = useState(false) // heavy content mounts after the slide-in finishes
 
   useEffect(() => {
     if (artifact) {
       setFileIndex(0)
       setView(artifact.preview ? 'preview' : 'code')
+      setReady(false)
     }
   }, [artifact])
 
@@ -41,7 +58,8 @@ function Artifact() {
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'spring', stiffness: 300, damping: 32 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            onAnimationComplete={() => setReady(true)}
             className="fixed inset-0 z-40 lg:static lg:z-auto w-full lg:w-[45%] h-full shrink-0 flex flex-col bg-[#0d0f14] border-l border-white/8"
           >
             {/* header */}
@@ -78,17 +96,15 @@ function Artifact() {
               </button>
             </div>
 
-            {/* body */}
-            <AnimatePresence mode="wait">
-              {view === 'code' ? (
-                <motion.div
-                  key="code"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="flex-1 flex flex-col min-h-0"
-                >
+            {/* body — waits for the slide-in to finish so highlighting never fights the animation */}
+            {!ready ? (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full border-2 border-white/10 border-t-indigo-400 animate-spin" />
+              </div>
+            ) : (
+            <div className="relative flex-1 min-h-0">
+                {/* both views stay mounted & painted — toggling is a visibility flip, zero reflow */}
+                <div className={`absolute inset-0 flex flex-col ${view === 'code' ? 'visible' : 'invisible'}`}>
                   {/* file tabs */}
                   <div className="flex items-center px-3 border-b border-white/8 overflow-x-auto no-scrollbar shrink-0">
                     {artifact.files?.map((f, i) => (
@@ -115,28 +131,17 @@ function Artifact() {
                     </button>
                   </div>
 
-                  {/* code */}
-                  <div className="flex-1 overflow-auto">
-                    <SyntaxHighlighter
-                      language={file?.language}
-                      style={oneDark}
-                      showLineNumbers
-                      wrapLongLines
-                      customStyle={{ margin: 0, minHeight: '100%', fontSize: '12px', background: '#0a0c10' }}
-                    >
-                      {file?.content || ''}
-                    </SyntaxHighlighter>
+                  {/* code — all files mounted & memoized; tabs flip visibility only */}
+                  <div className="relative flex-1 min-h-0">
+                    {artifact.files?.map((f, i) => (
+                      <div key={f.path} className={`absolute inset-0 overflow-auto ${i === fileIndex ? 'visible' : 'invisible'}`}>
+                        <CodeFile file={f} />
+                      </div>
+                    ))}
                   </div>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="preview"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className={`flex-1 min-h-0 ${artifact.preview ? 'bg-white' : ''}`}
-                >
+                </div>
+
+                <div className={`absolute inset-0 ${artifact.preview ? 'bg-white' : ''} ${view === 'preview' ? 'visible' : 'invisible'}`}>
                   {artifact.preview ? (
                     <iframe
                       srcDoc={artifact.preview}
@@ -153,9 +158,9 @@ function Artifact() {
                       </p>
                     </div>
                   )}
-                </motion.div>
-              )}
-            </AnimatePresence>
+                </div>
+            </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
