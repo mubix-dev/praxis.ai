@@ -1,10 +1,17 @@
 import { getllmModel } from "../utils/llm.models.js";
 import axios from "axios";
 import { getFromS3, uploadToS3 } from "../utils/s3.js";
+import { getMemory } from "../utils/memory.js";
 
 export const visionAgent = async (state) => {
   try {
     const llm = getllmModel("vision");
+
+    const history = (await getMemory(state.conversationId)) || [];
+    const context = history
+      .slice(-6)
+      .map((m) => `${m.role}: ${String(m.content).slice(0, 500)}`)
+      .join("\n");
 
     const response =
       await llm.invoke(`You are an elite AI image prompt engineer specialized in ultra-realistic 8K photography.
@@ -23,7 +30,9 @@ Rules:
 - Reply with ONLY the final image prompt — no headings, no explanation, no quotes around it.
 - Keep it under 120 words.
 - Never include real people's names or copyrighted characters — describe a generic look-alike instead.
+- If the request is short or refers to earlier messages ("generate an image of that", "make it at night instead"), resolve the subject from the conversation below.
 
+${context ? `Conversation so far:\n${context}\n` : ""}
 User request:
 ${state.prompt}`);
 
