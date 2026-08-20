@@ -22,7 +22,7 @@ export const getllmModel = (agent)=>{
             return gemini; 
         case "search":
             return gemini;
-        case "codeing":
+        case "coding":
             return openrouter;
         case "pdf":
             return gemini
