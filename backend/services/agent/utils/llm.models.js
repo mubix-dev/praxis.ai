@@ -24,6 +24,10 @@ export const getllmModel = (agent)=>{
             return gemini;
         case "codeing":
             return openrouter;
+        case "pdf":
+            return gemini
+        case "ppt":
+            return gemini
         default:
             return gemini;
     }
