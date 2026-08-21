@@ -4,7 +4,7 @@ import { addMessage } from "../utils/memory.js"
 import redis from "../../../shared/redis/redis.js"
 import { getllmModel } from "../utils/llm.models.js"
 
-const AGENT_COSTS = { chat: 1, search: 2, coding: 5, pdf: 5, ppt: 5, vision: 10 }
+const AGENT_COSTS = { chat: 2, search: 3, coding: 5, pdf: 5, ppt: 5, vision: 5 }
 
 export const agent = async(req,res)=>{
     try {
@@ -15,7 +15,6 @@ export const agent = async(req,res)=>{
 
         const userId = req.headers["x-user-id"]
 
-        // gate: block zero-balance users BEFORE doing paid LLM work (read-only)
         const balance = await axios.get(`${process.env.BILLING_SERVICE}/credits`, {
             headers: { "x-user-id": userId },
         }).catch((e) => e.response)
@@ -28,7 +27,7 @@ export const agent = async(req,res)=>{
             prompt,conversationId,agent
         })
 
-        const cost = AGENT_COSTS[result.agent] ?? 1
+        const cost = AGENT_COSTS[result.agent] ?? 2
         await axios.post(`${process.env.BILLING_SERVICE}/deduct`,
             { cost },
             { headers: {
