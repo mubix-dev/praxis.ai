@@ -7,6 +7,7 @@ import PaymentResult from './pages/PaymentResult'
 import useGetCurrUser from './hooks/useGetCurrUser'
 import useGetAllConversations from './hooks/useGetAllConversations'
 import useGetCredits from './hooks/useGetCredits'
+import Loader from './components/Loader'
 
 function App() {
   useGetCurrUser()
@@ -14,13 +15,10 @@ function App() {
   useGetCredits()
   const { userData, userLoading } = useSelector(state => state.user)
 
-  // loading screen while the session is being restored
   if (userLoading) {
     return (
       <div className="h-screen flex items-center justify-center bg-[#0d0f14]">
-        <h2 className="text-2xl font-medium tracking-[0.35em] text-slate-100 animate-pulse">
-          PR<span className="text-indigo-400">A</span>X<span className="text-cyan-400">I</span>S
-        </h2>
+        <Loader />
       </div>
     )
   }
