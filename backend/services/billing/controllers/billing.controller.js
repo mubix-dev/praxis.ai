@@ -13,7 +13,7 @@ const PLANS = {
   pro: { amount: 299, credits: 300 },
 };
 
-const MAX_CREDITS = 500;
+const MAX_CREDITS = 350;
 
 const getCredits = async (req, res) => {
   try {
