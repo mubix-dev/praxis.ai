@@ -96,8 +96,8 @@ const checkout = async (req, res) => {
     const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      success_url: `${process.env.CLIENT_URL}/pricing?success=true`,
-      cancel_url: `${process.env.CLIENT_URL}/pricing?canceled=true`,
+      success_url: `${process.env.CLIENT_URL}/payment/success`,
+      cancel_url: `${process.env.CLIENT_URL}/payment/cancelled`,
       line_items: [
         {
           price_data: {
