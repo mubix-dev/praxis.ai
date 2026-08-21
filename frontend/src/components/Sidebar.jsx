@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
 import { Coins, LogOut, MessageSquare, MoreHorizontal, PanelLeftClose, PanelLeftOpen, Pencil, PlusIcon, Settings, Trash2, User } from "lucide-react";
 import { createConversation } from "../features/createConversation";
 import { deleteConversation } from "../features/deleteConversation";
 import { renameConversation } from "../features/renameConversation";
 import {
   addConversation,
-  setSelectedConversation,
   removeConversation,
   updateConversationTitle,
 } from "../redux/conversationSlice";
@@ -41,6 +41,8 @@ function Sidebar() {
     return () => window.removeEventListener("click", close);
   }, [menuId, settingsOpen]);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { conversationId } = useParams();
 
   const { conversations, selectedConversation } = useSelector(
     (state) => state.conversation,
@@ -50,7 +52,7 @@ function Sidebar() {
     try {
       const data = await createConversation();
       dispatch(addConversation(data));
-      dispatch(setSelectedConversation(data))
+      navigate(`/chat/${data._id}`);
     } catch (error) {
       console.log(error);
     }
@@ -60,6 +62,7 @@ function Sidebar() {
     try {
       await api.get("/api/auth/logout")
       dispatch(setUserData(null))
+      navigate("/")
     } catch (error) {
       console.log(error)
     }
@@ -202,7 +205,10 @@ function Sidebar() {
               <button
                 onClick={async () => {
                   const ok = await deleteConversation(confirmId);
-                  if (ok) dispatch(removeConversation(confirmId));
+                  if (ok) {
+                    dispatch(removeConversation(confirmId));
+                    if (confirmId === conversationId) navigate("/chat");
+                  }
                   setConfirmId(null);
                 }}
                 className="px-3 py-1.5 rounded-lg text-xs text-white bg-red-500/80 hover:bg-red-500 cursor-pointer"
@@ -239,7 +245,7 @@ function Sidebar() {
                 <button
                   key={conv._id}
                   title={conv.title}
-                  onClick={() => dispatch(setSelectedConversation(conv))}
+                  onClick={() => navigate(`/chat/${conv._id}`)}
                   className={`p-2 rounded-lg cursor-pointer ${selectedConversation?._id == conv?._id ? "bg-indigo-500/15 text-indigo-200" : "text-slate-500 hover:bg-white/5"}`}
                 >
                   <MessageSquare size={16} />
@@ -291,7 +297,7 @@ function Sidebar() {
                       key={conv._id}
                       className={`group relative px-3 py-2 rounded-lg text-sm cursor-pointer flex items-center gap-2 ${isActive ? "bg-indigo-500/15 text-indigo-100 hover:bg-indigo-500/20" : " text-slate-300 hover:bg-white/5"}`}
                       onClick={() => {
-                        dispatch(setSelectedConversation(conv));
+                        navigate(`/chat/${conv._id}`);
                         if (window.innerWidth < 768) setOpen(false);
                       }}
                     >
