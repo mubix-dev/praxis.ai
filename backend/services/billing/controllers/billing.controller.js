@@ -122,4 +122,35 @@ const checkout = async (req, res) => {
   }
 };
 
-export { getCredits, deductCredits, checkout };
+const stripeWebhook = async (req, res) => {
+  try {
+    const stripe = getStripe();
+    const signature = req.headers["stripe-signature"];
+    const event = stripe.webhooks.constructEvent(
+      req.body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET,
+    );
+
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object;
+      const userId = session.metadata.userId;
+      const creditsToAdd = Number(session.metadata.credits);
+
+      if (userId && creditsToAdd) {
+        await Credits.findOneAndUpdate(
+          { userId },
+          { $inc: { credits: creditsToAdd } },
+          { upsert: true },
+        );
+      }
+    }
+
+    return res.status(200).json({ received: true });
+  } catch (error) {
+    console.log("stripeWebhook error:", error.message);
+    return res.status(400).json({ message: "Webhook error" });
+  }
+};
+
+export { getCredits, deductCredits, checkout,stripeWebhook };
