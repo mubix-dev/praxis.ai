@@ -2,11 +2,14 @@ import express from "express"
 import dotenv from "dotenv"
 import connectDb from "./db/db.js"
 import router from "./routes/credits.routes.js"
+import { stripeWebhook } from "./controllers/billing.controller.js"
 dotenv.config()
 
 const PORT = process.env.PORT || 3004
 
 const app = express()
+
+app.post("/webhook", express.raw({ type: "application/json" }), stripeWebhook)
 
 app.use(express.json())
 
