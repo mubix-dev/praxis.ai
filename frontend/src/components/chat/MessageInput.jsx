@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Paperclip, Mic, SendHorizontal, Sparkles, MessageSquare, Globe, Code2, FileText, Presentation, Eye } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendMessage } from "../../features/sendMessage";
+import {getCredits} from "../../features/getCredits.js"
+import { setCredits } from "../../redux/userSlice";
 import { addMessage, setThinking } from "../../redux/messageSlice";
 import {
   addConversation,
@@ -51,6 +53,10 @@ function MessageInput({ suggestion }) {
       dispatch(addMessage({ role: "user", content: text }));
       setText("");
       const data = await sendMessage(text, conversation?._id,agent);
+      
+      const userCredits = await getCredits()
+      dispatch(setCredits(userCredits?.credits))
+
       dispatch(setThinking(false));
       dispatch(addMessage({ role: "assistant", content: data?.answer, images:data?.images, artifact:data?.artifact }));
     } catch (error) {
