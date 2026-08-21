@@ -26,6 +26,7 @@ app.use("/api/auth",proxy(process.env.AUTH_SERVICE))
 app.get("/api/me",isAuth,getCurrentUser)
 app.use("/api/chat",isAuth,proxyWithHeaders(process.env.CHAT_SERVICE))
 app.use("/api/agent",isAuth,proxyWithHeaders(process.env.AGENT_SERVICE))
+app.use("/api/billing",isAuth,proxyWithHeaders(process.env.BILLING_SERVICE))
 
 
 app.get("/",(req,res)=>{
