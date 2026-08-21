@@ -5,6 +5,7 @@ import redis from "../../../shared/redis/redis.js"
 import { getllmModel } from "../utils/llm.models.js"
 
 const AGENT_COSTS = { chat: 2, search: 3, coding: 5, pdf: 5, ppt: 5, vision: 5 }
+const MIN_COST = Math.min(...Object.values(AGENT_COSTS))
 
 export const agent = async(req,res)=>{
     try {
@@ -19,7 +20,8 @@ export const agent = async(req,res)=>{
             headers: { "x-user-id": userId },
         }).catch((e) => e.response)
 
-        if ((balance?.data?.credits ?? 0) <= 0) {
+        const requiredCost = agent && agent !== "auto" ? (AGENT_COSTS[agent] ?? MIN_COST) : MIN_COST
+        if ((balance?.data?.credits ?? 0) < requiredCost) {
             return res.status(402).json({ message: "Insufficient credits" })
         }
 
