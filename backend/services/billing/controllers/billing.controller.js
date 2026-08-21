@@ -50,11 +50,22 @@ const deductCredits = async (req, res) => {
     if (!Number.isFinite(cost) || cost <= 0)
       return res.status(400).json({ message: "Invalid cost" });
 
-    const userCredits = await Credits.findOneAndUpdate(
+    // the work is already done by the time we're called, so charge what the
+    // user has (floored at 0) instead of failing and giving the response free
+    let userCredits = await Credits.findOneAndUpdate(
       { userId, credits: { $gte: cost } },
       { $inc: { credits: -cost } },
       { new: true },
     );
+
+    if (!userCredits) {
+      // balance below cost: take whatever is left
+      userCredits = await Credits.findOneAndUpdate(
+        { userId },
+        { $set: { credits: 0 } },
+        { new: true },
+      );
+    }
 
     if (!userCredits) {
       return res.status(402).json({ message: "Insufficient Credits" });
