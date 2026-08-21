@@ -4,10 +4,12 @@ import Home from './pages/Home'
 import Landing from './pages/Landing'
 import useGetCurrUser from './hooks/useGetCurrUser'
 import useGetAllConversations from './hooks/useGetAllConversations'
+import useGetCredits from './hooks/useGetCredits'
 
 function App() {
   useGetCurrUser()
   useGetAllConversations()
+  useGetCredits()
   const { userData, userLoading } = useSelector(state => state.user)
 
   // loading screen while the session is being restored
