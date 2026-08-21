@@ -1,50 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 64">
   <defs>
-    <radialGradient id="pxl-core" cx="42%" cy="40%" r="60%">
-      <stop offset="0" stop-color="#c7d2fe"/>
-      <stop offset="55%" stop-color="#6d5efc"/>
-      <stop offset="1" stop-color="#4f46e5"/>
-    </radialGradient>
-    <linearGradient id="pxl-ring" x1="10" y1="54" x2="54" y2="10" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#6d5efc"/>
-      <stop offset="1" stop-color="#0891b2"/>
+    <linearGradient id="pxl-glow" x1="-10" y1="6" x2="10" y2="-4" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6d5efc"/><stop offset="1" stop-color="#22d3ee"/>
     </linearGradient>
-    <linearGradient id="pxl-ai" x1="100" y1="44" x2="160" y2="20" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#6d5efc"/>
-      <stop offset="1" stop-color="#0891b2"/>
+    <linearGradient id="pxl-rim" x1="-19" y1="17" x2="19" y2="-15" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4f46e5"/><stop offset="1" stop-color="#06b6d4"/>
     </linearGradient>
-    <filter id="pxl-glow" x="-60%" y="-60%" width="220%" height="220%">
-      <feGaussianBlur stdDeviation="0.8" result="b"/>
-      <feMerge>
-        <feMergeNode in="b"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
+    <linearGradient id="pxl-ai" x1="90" y1="44" x2="165" y2="20" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6d5efc"/><stop offset="1" stop-color="#0891b2"/>
+    </linearGradient>
   </defs>
 
-  <!-- mark: agents in orbit around a glowing core -->
-  <g filter="url(#pxl-glow)">
-    <g fill="none">
-      <g>
-        <ellipse cx="32" cy="32" rx="22" ry="8.5" stroke="url(#pxl-ring)" stroke-width="2" transform="rotate(-30 32 32)" opacity="0.9"/>
-        <ellipse cx="32" cy="32" rx="22" ry="8.5" stroke="#06b6d4" stroke-width="1.6" transform="rotate(30 32 32)" opacity="0.65"/>
-        <ellipse cx="32" cy="32" rx="22" ry="8.5" stroke="#6d5efc" stroke-width="1.4" transform="rotate(90 32 32)" opacity="0.45"/>
-        <animateTransform attributeName="transform" type="rotate" from="0 32 32" to="360 32 32" dur="24s" repeatCount="indefinite"/>
-      </g>
-
-      <g>
-        <circle cx="13" cy="43" r="2.4" fill="#06b6d4"/>
-        <circle cx="51" cy="43" r="2.4" fill="#10b981"/>
-        <circle cx="32" cy="10" r="2.4" fill="#ec4899"/>
-        <animateTransform attributeName="transform" type="rotate" from="0 32 32" to="360 32 32" dur="24s" repeatCount="indefinite"/>
-      </g>
-    </g>
-
-    <circle cx="32" cy="32" r="7" fill="url(#pxl-core)">
-      <animate attributeName="r" values="7;7.8;7" dur="3s" repeatCount="indefinite"/>
+  <!-- the Praxis agent, visor style — antenna blinks, eyes glow-pulse -->
+  <g transform="translate(26 31) scale(0.72)">
+    <line x1="0" y1="-15" x2="0" y2="-21" stroke="#4f46e5" stroke-width="2.2" stroke-linecap="round"/>
+    <circle cx="0" cy="-23.5" r="2.8" fill="#22d3ee">
+      <animate attributeName="opacity" values="1;0.35;1" dur="2s" repeatCount="indefinite"/>
     </circle>
+    <rect x="-19" y="-15" width="38" height="32" rx="12" fill="#171c28" stroke="url(#pxl-rim)" stroke-width="1.6"/>
+    <g>
+      <rect x="-11" y="-6" width="7" height="10" rx="3.5" fill="url(#pxl-glow)"/>
+      <rect x="4" y="-6" width="7" height="10" rx="3.5" fill="url(#pxl-glow)"/>
+      <animate attributeName="opacity" values="1;0.55;1" dur="3s" repeatCount="indefinite"/>
+    </g>
+    <path d="M-4 10 Q0 13 4 10" fill="none" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" opacity="0.85"/>
   </g>
 
   <!-- wordmark (light text for dark theme) — the A and I carry the gradient -->
-  <text x="66" y="40" font-family="'Avenir Next', 'Century Gothic', 'Futura', 'Segoe UI', system-ui, sans-serif" font-size="23" font-weight="500" letter-spacing="3.5" fill="#e8ecf4">PR<tspan fill="url(#pxl-ai)">A</tspan>X<tspan fill="url(#pxl-ai)">I</tspan>S</text>
+  <text x="54" y="40" font-family="'Avenir Next', 'Century Gothic', 'Futura', 'Segoe UI', system-ui, sans-serif" font-size="23" font-weight="500" letter-spacing="3.5" fill="#e8ecf4">PR<tspan fill="url(#pxl-ai)">A</tspan>X<tspan fill="url(#pxl-ai)">I</tspan>S</text>
 </svg>
