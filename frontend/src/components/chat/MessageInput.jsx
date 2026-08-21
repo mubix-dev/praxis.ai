@@ -22,10 +22,16 @@ const agents = [
   { name: "vision", label: "Image", icon: Image, color: "text-amber-400" },
 ];
 
+// keep in sync with AGENT_COSTS in backend/services/agent/controllers/agent.controller.js
+const AGENT_COSTS = { chat: 2, search: 3, coding: 5, pdf: 5, ppt: 5, vision: 5 };
+const MIN_COST = Math.min(...Object.values(AGENT_COSTS));
+
 function MessageInput({ suggestion }) {
   const { selectedConversation } = useSelector((state) => state.conversation);
+  const { credits } = useSelector((state) => state.user);
   const [text, setText] = useState("");
   const [agent, setAgent] = useState("auto");
+  const [creditError, setCreditError] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -34,7 +40,15 @@ function MessageInput({ suggestion }) {
   }, [suggestion]);
 
   const handleSendMessage = async () => {
-    dispatch(setThinking(agent)); 
+    // block before anything is created (conversation, sidebar entry, user bubble)
+    const required = agent === "auto" ? MIN_COST : (AGENT_COSTS[agent] ?? MIN_COST);
+    if ((credits ?? 0) < required) {
+      setCreditError(true);
+      return;
+    }
+    setCreditError(false);
+
+    dispatch(setThinking(agent));
     try {
       let conversation = selectedConversation;
       if (!conversation) {
@@ -59,7 +73,12 @@ function MessageInput({ suggestion }) {
       dispatch(setCredits(userCredits?.credits))
 
       dispatch(setThinking(false));
-      dispatch(addMessage({ role: "assistant", content: data?.answer, images:data?.images, artifact:data?.artifact }));
+      const content =
+        data?.answer ??
+        (data?.error === "Insufficient credits"
+          ? "You don't have enough credits for this request. Top up from **Settings → Buy Credits** to continue."
+          : "Something went wrong while generating a response. Please try again.");
+      dispatch(addMessage({ role: "assistant", content, images:data?.images, artifact:data?.artifact }));
     } catch (error) {
       dispatch(setThinking(false));
       console.log(error);
@@ -74,7 +93,7 @@ function MessageInput({ suggestion }) {
         {agents.map((a) => (
           <button
             key={a.name}
-            onClick={() => setAgent(a.name)}
+            onClick={() => { setAgent(a.name); setCreditError(false); }}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs cursor-pointer border transition-colors ${
               agent === a.name
                 ? "bg-indigo-500/15 border-indigo-400/30 text-indigo-200"
@@ -86,6 +105,12 @@ function MessageInput({ suggestion }) {
           </button>
         ))}
       </div>
+
+      {creditError && (
+        <div className="w-full max-w-3xl mb-2 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-400/25 text-xs text-amber-300">
+          Not enough credits for this request — open <span className="font-medium">Settings → Buy Credits</span> to top up.
+        </div>
+      )}
 
       <div className="w-full max-w-3xl flex items-end gap-1 px-2 py-2 rounded-2xl bg-white/5 border border-white/8 focus-within:border-white/15">
         <button
