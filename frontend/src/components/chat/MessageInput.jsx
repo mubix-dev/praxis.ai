@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Paperclip, Mic, SendHorizontal, Sparkles, MessageSquare, Globe, Code2, FileText, Presentation, Eye } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendMessage } from "../../features/sendMessage";
@@ -7,7 +8,6 @@ import { setCredits } from "../../redux/userSlice";
 import { addMessage, setThinking } from "../../redux/messageSlice";
 import {
   addConversation,
-  setSelectedConversation,
   updateConversationTitle,
 } from "../../redux/conversationSlice.js";
 import { createConversation } from "../../features/createConversation.js";
@@ -27,6 +27,7 @@ function MessageInput({ suggestion }) {
   const [text, setText] = useState("");
   const [agent, setAgent] = useState("auto");
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (suggestion) setText(suggestion);
@@ -39,7 +40,7 @@ function MessageInput({ suggestion }) {
       if (!conversation) {
         const newConversation = await createConversation();
         dispatch(addConversation(newConversation));
-        dispatch(setSelectedConversation(newConversation));
+        navigate(`/chat/${newConversation._id}`);
         conversation = newConversation;
       }
 
