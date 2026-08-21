@@ -14,7 +14,7 @@ import api from "../utils/axios";
 import { setUserData } from "../redux/userSlice";
 
 function Sidebar() {
-  const { userData } = useSelector((state) => state.user);
+  const { userData,credits } = useSelector((state) => state.user);
   const [open, setOpen] = useState(window.innerWidth >= 768);
   const [avatarError, setAvatarError] = useState(false);
   const [menuId, setMenuId] = useState(null);
@@ -305,7 +305,7 @@ function Sidebar() {
               <p className="text-sm truncate">{userData?.name || "User"}</p>
               <span className="inline-flex items-center gap-1 mt-0.5 px-2 py-px rounded-full text-[10px] text-indigo-300 bg-indigo-400/10 border border-indigo-400/20">
                 <Coins size={10} className="shrink-0" />
-                Free plan
+                {credits} credits
               </span>
             </div>
             <div className="relative">
