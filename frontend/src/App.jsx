@@ -1,7 +1,9 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Home from './pages/Home'
 import Landing from './pages/Landing'
+import PaymentResult from './pages/PaymentResult'
 import useGetCurrUser from './hooks/useGetCurrUser'
 import useGetAllConversations from './hooks/useGetAllConversations'
 import useGetCredits from './hooks/useGetCredits'
@@ -24,9 +26,14 @@ function App() {
   }
 
   return (
-    <>
-      {userData ? <Home/> : <Landing/>}
-    </>
+    <Routes>
+      <Route path="/" element={userData ? <Navigate to="/chat" replace /> : <Landing />} />
+      <Route path="/chat" element={userData ? <Home /> : <Navigate to="/" replace />} />
+      <Route path="/chat/:conversationId" element={userData ? <Home /> : <Navigate to="/" replace />} />
+      <Route path="/payment/success" element={<PaymentResult success />} />
+      <Route path="/payment/cancelled" element={<PaymentResult />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
 
