@@ -12,6 +12,7 @@ const PLANS = [
 function BuyCreditsModal({ open, onClose }) {
   const { credits } = useSelector((state) => state.user);
   const [loadingPlan, setLoadingPlan] = useState(null);
+  const [error, setError] = useState(null);
 
   if (!open) return null;
 
@@ -64,12 +65,14 @@ function BuyCreditsModal({ open, onClose }) {
                   disabled={loadingPlan !== null}
                   onClick={async () => {
                     setLoadingPlan(plan.id);
+                    setError(null);
                     try {
-                      const url = await createCheckout(plan.id);
-                      if (url) {
-                        window.location.href = url;
+                      const result = await createCheckout(plan.id);
+                      if (result.url) {
+                        window.location.href = result.url;
                         return;
                       }
+                      setError(result.error || "Couldn't start the checkout. Please try again.");
                     } finally {
                       setLoadingPlan(null);
                     }
@@ -88,6 +91,12 @@ function BuyCreditsModal({ open, onClose }) {
             </div>
           ))}
         </div>
+
+        {error && (
+          <div className="px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-400/25 text-xs text-amber-300">
+            {error}
+          </div>
+        )}
 
         <p className="flex items-center justify-center gap-1 text-[10px] text-slate-600">
           <Lock size={10} /> Payments are securely handled by Stripe.
