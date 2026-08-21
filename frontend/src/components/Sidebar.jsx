@@ -12,6 +12,13 @@ import {
 } from "../redux/conversationSlice";
 import api from "../utils/axios";
 import { setUserData } from "../redux/userSlice";
+import { createCheckout } from "../features/createCheckout";
+
+const PLANS = [
+  { id: "starter", name: "Starter", credits: 60, price: "$0.99" },
+  { id: "student", name: "Student", credits: 150, price: "$1.99" },
+  { id: "pro", name: "Pro", credits: 300, price: "$2.99" },
+];
 
 function Sidebar() {
   const { userData,credits } = useSelector((state) => state.user);
@@ -22,6 +29,7 @@ function Sidebar() {
   const [renameId, setRenameId] = useState(null);
   const [renameText, setRenameText] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [buyOpen, setBuyOpen] = useState(false);
 
   useEffect(() => {
     if (!menuId && !settingsOpen) return;
@@ -112,6 +120,58 @@ function Sidebar() {
                 Save
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* buy credits */}
+      {buyOpen && (
+        <div
+          onClick={() => setBuyOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-80 bg-[#13151c] border border-white/8 rounded-2xl p-6 flex flex-col gap-4"
+          >
+            <div>
+              <h3 className="text-sm font-semibold text-slate-100">Buy credits</h3>
+              <p className="text-xs text-slate-500 mt-1">
+                You have {credits} credits. Payments are securely handled by Stripe.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              {PLANS.map((plan) => (
+                <div
+                  key={plan.id}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/3 border border-white/8"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-slate-200">{plan.name}</p>
+                    <p className="text-xs text-indigo-300 flex items-center gap-1">
+                      <Coins size={10} /> {plan.credits} credits
+                    </p>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      const url = await createCheckout(plan.id);
+                      if (url) window.location.href = url;
+                    }}
+                    className="px-3 py-1.5 rounded-lg text-xs text-white bg-indigo-500 hover:bg-indigo-400 cursor-pointer"
+                  >
+                    {plan.price}
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setBuyOpen(false)}
+              className="text-xs text-slate-500 hover:text-slate-300 cursor-pointer"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}
@@ -327,6 +387,16 @@ function Sidebar() {
                     className="flex items-center gap-2 px-3 py-1.5 text-xs text-red-400 hover:bg-white/5 w-full cursor-pointer whitespace-nowrap rounded-sm"
                   >
                     <LogOut size={12} /> Logout
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSettingsOpen(false);
+                      setBuyOpen(true);
+                    }}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs text-indigo-300 hover:bg-white/5 w-full cursor-pointer whitespace-nowrap rounded-sm"
+                  >
+                    <Coins size={12} /> Buy Credits
                   </button>
                 </div>
               )}
