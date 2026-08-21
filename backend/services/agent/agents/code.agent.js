@@ -45,7 +45,7 @@ ${state.prompt}`)
   }
 
   if (intent === "CODE_GENERATION") {
-    const genResponse = await llm.invoke(`You are Praxis Code, an expert full-stack engineer and UI designer.
+    const genPrompt = `You are Praxis Code, an expert full-stack engineer and UI designer.
 
 Build exactly what the user asks, in the framework THEY request (React, Vue, Next.js, etc. are all fine).
 If NO framework is specified and it's web content, default to plain HTML + CSS + JavaScript as exactly three files:
@@ -84,22 +84,39 @@ Escape all quotes and newlines correctly so the JSON parses.
 ${artifactContext ? "\nIf the user is asking to MODIFY the current project below, return the FULL updated files (all of them, complete), keeping everything that wasn't asked to change." + artifactContext : ""}
 
 User request:
-${state.prompt}`)
+${state.prompt}`
 
-    let raw = genResponse.content
-    if (typeof raw !== "string") raw = String(raw)
-    raw = raw.trim().replace(/^```json?\s*/i, "").replace(/```$/, "")
+    const parseArtifact = (content) => {
+      let raw = typeof content === "string" ? content : String(content)
+      const start = raw.indexOf("{")
+      const end = raw.lastIndexOf("}")
+      if (start === -1 || end <= start) return null
+      try {
+        const artifact = JSON.parse(raw.slice(start, end + 1))
+        return artifact?.files?.length ? artifact : null
+      } catch {
+        return null
+      }
+    }
 
-    try {
-      const artifact = JSON.parse(raw)
-      console.log(artifact)
+    let artifact = parseArtifact((await llm.invoke(genPrompt)).content)
+    if (!artifact) {
+      // one retry — truncated or malformed JSON happens occasionally
+      artifact = parseArtifact((await llm.invoke(genPrompt)).content)
+    }
+
+    if (artifact) {
       return {
         ...state,
         artifact,
         aiResponse: `${artifact.explanation}\n\n*Open the artifact panel to view the code and live preview.*`,
       }
-    } catch {
-      return { ...state, aiResponse: genResponse.content }
+    }
+
+    return {
+      ...state,
+      aiResponse:
+        "I wasn't able to package that project into the artifact view this time — it may have been too large to generate in one go. Please try again, or break the request into smaller parts (for example, one page or component at a time).",
     }
   }
 
