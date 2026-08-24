@@ -4,7 +4,7 @@ import { addMessage } from "../utils/memory.js"
 import redis from "../../../shared/redis/redis.js"
 import { getllmModel } from "../utils/llm.models.js"
 
-const AGENT_COSTS = { chat: 2, search: 3, coding: 5, pdf: 5, ppt: 5, vision: 5 }
+const AGENT_COSTS = { chat: 2, search: 3, coding: 5, pdf: 5, ppt: 5, vision: 5,pdfRag:5,imageAnalyzer:5 }
 const MIN_COST = Math.min(...Object.values(AGENT_COSTS))
 
 export const agent = async(req,res)=>{
