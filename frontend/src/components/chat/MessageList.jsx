@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import MessageBox from './MessageBox'
 
-// auto mode doesn't know the agent yet, so step through generic stages
 const autoStages = [
   "Choosing the right agent...",
   "Working on your request...",
@@ -16,7 +15,7 @@ const thinkingTexts = {
   coding: "Writing code...",
   pdf: "Working on your document...",
   ppt: "Building your slides...",
-  vision: "Generating...",
+  vision: "Processing...",
 }
 
 function MessageList() {
