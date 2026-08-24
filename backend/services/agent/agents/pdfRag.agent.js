@@ -1,5 +1,5 @@
 import fs from "fs";
-import { PDFParse } from "pdf-parse";
+import * as mupdf from "mupdf";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { vectorStore } from "../db/vectorDB.js";
 import { getllmModel } from "../utils/llm.models.js";
@@ -9,15 +9,15 @@ export const pdfRagAgent = async (state) => {
   try {
     const buffer = fs.readFileSync(state.file.path);
 
-    const pdf = new PDFParse({
-      data: buffer,
-    });
+    const doc = mupdf.Document.openDocument(buffer, "application/pdf");
+    let text = "";
+    for (let i = 0; i < doc.countPages(); i++) {
+      const page = doc.loadPage(i);
+      text += page.toStructuredText().asText() + "\n";
+    }
 
-    const result = await pdf.getText();
-    const text = result.text;
-
-    // scanned/image-only or empty pdf -> nothing to embed
-    if (!text?.trim()) {
+    const meaningful = (text || "").replace(/--\s*\d+\s+of\s+\d+\s*--/g, "").trim();
+    if (meaningful.length < 50) {
       await fs.promises.unlink(state.file.path).catch(() => {});
       return {
         ...state,
@@ -36,7 +36,14 @@ export const pdfRagAgent = async (state) => {
     const collectionName = `pdf-${Date.now()}`;
 
     const store = await vectorStore(docs, collectionName);
-    const releventDocs = await store.similaritySearch(state.prompt, 5);
+    let releventDocs = await store.similaritySearch(state.prompt, 5);
+    console.log(`pdfRag: ${docs.length} chunks embedded, ${releventDocs.length} retrieved`);
+
+
+    if (releventDocs.length === 0) {
+      console.log("pdfRag: empty retrieval — falling back to first chunks");
+      releventDocs = docs.slice(0, 5);
+    }
 
     const context = releventDocs.map((doc) => doc.pageContent).join("\n\n");
 
@@ -72,6 +79,15 @@ Question: ${state.prompt?.trim() || "Summarize this document."}`),
   } catch (error) {
     console.log("pdfRagAgent error:", error.message);
     await fs.promises.unlink(state.file?.path).catch(() => {});
+
+    if (error.message?.includes("must not be empty")) {
+      return {
+        ...state,
+        aiResponse:
+          "The document service is briefly rate-limited — please try uploading again in a minute.",
+      };
+    }
+
     return {
       ...state,
       aiResponse:
