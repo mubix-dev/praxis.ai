@@ -10,6 +10,7 @@ const MIN_COST = Math.min(...Object.values(AGENT_COSTS))
 export const agent = async(req,res)=>{
     try {
         const {prompt,conversationId,agent} = req.body
+        const file = req.file
         if(!prompt || !conversationId){
             return res.status(400).json({message:"prompt and conversationId are required"})
         }
@@ -26,7 +27,7 @@ export const agent = async(req,res)=>{
         }
 
         const result = await graph.invoke({
-            prompt,conversationId,agent
+            prompt,conversationId,agent,file
         })
 
         const cost = AGENT_COSTS[result.agent] ?? 2
