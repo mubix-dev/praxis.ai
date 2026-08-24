@@ -19,13 +19,13 @@ const openrouter = new ChatOpenRouter({
 export const getllmModel = (agent)=>{
     switch (agent) {
         case "chat":
-            return gemini; 
+            return groq; 
         case "search":
-            return gemini;
+            return groq;
         case "coding":
             return openrouter;
         case "pdf":
-            return gemini
+            return groq
         case "ppt":
             return gemini
         default:
