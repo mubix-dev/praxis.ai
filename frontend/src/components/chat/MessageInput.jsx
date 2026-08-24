@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Paperclip, Mic, SendHorizontal, Sparkles, MessageSquare, Globe, Code2, FileText, Presentation, Eye } from "lucide-react";
+import { Paperclip, Mic, SendHorizontal, Sparkles, MessageSquare, Globe, Code2, FileText, Presentation, Eye, X, Image as ImageIcon } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendMessage } from "../../features/sendMessage";
 import {getCredits} from "../../features/getCredits.js"
@@ -22,9 +22,12 @@ const agents = [
   { name: "vision", label: "Vision", icon: Eye, color: "text-amber-400" },
 ];
 
-// keep in sync with AGENT_COSTS in backend/services/agent/controllers/agent.controller.js
 const AGENT_COSTS = { chat: 2, search: 3, coding: 5, pdf: 5, ppt: 5, vision: 5 };
 const MIN_COST = Math.min(...Object.values(AGENT_COSTS));
+
+const FILE_AGENTS = ["auto", "pdf", "vision"];
+const IMAGE_AGENTS = ["auto", "vision"];
+const PDF_AGENTS = ["auto", "pdf"];
 
 function MessageInput({ suggestion }) {
   const { selectedConversation } = useSelector((state) => state.conversation);
@@ -32,6 +35,10 @@ function MessageInput({ suggestion }) {
   const [text, setText] = useState("");
   const [agent, setAgent] = useState("auto");
   const [creditError, setCreditError] = useState(false);
+  const [file, setFile] = useState(null);
+  const [attachOpen, setAttachOpen] = useState(false);
+  const imageRef = useRef(null);
+  const pdfRef = useRef(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -39,8 +46,14 @@ function MessageInput({ suggestion }) {
     if (suggestion) setText(suggestion);
   }, [suggestion]);
 
+  useEffect(() => {
+    if (!attachOpen) return;
+    const close = () => setAttachOpen(false);
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
+  }, [attachOpen]);
+
   const handleSendMessage = async () => {
-    // block before anything is created (conversation, sidebar entry, user bubble)
     const required = agent === "auto" ? MIN_COST : (AGENT_COSTS[agent] ?? MIN_COST);
     if ((credits ?? 0) < required) {
       setCreditError(true);
@@ -65,9 +78,10 @@ function MessageInput({ suggestion }) {
         });
       }
 
-      dispatch(addMessage({ role: "user", content: text }));
+      dispatch(addMessage({ role: "user", content: file ? `${text}\n\n📎 *${file.name}*` : text }));
       setText("");
-      const data = await sendMessage(text, conversation?._id,agent);
+      const data = await sendMessage(text, conversation?._id, agent, file);
+      setFile(null);
       
       const userCredits = await getCredits()
       dispatch(setCredits(userCredits?.credits))
@@ -93,7 +107,15 @@ function MessageInput({ suggestion }) {
         {agents.map((a) => (
           <button
             key={a.name}
-            onClick={() => { setAgent(a.name); setCreditError(false); }}
+            onClick={() => {
+              setAgent(a.name);
+              setCreditError(false);
+
+              if (file) {
+                const allowed = file.type.startsWith("image/") ? IMAGE_AGENTS : PDF_AGENTS;
+                if (!allowed.includes(a.name)) setFile(null);
+              }
+            }}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs cursor-pointer border transition-colors ${
               agent === a.name
                 ? "bg-indigo-500/15 border-indigo-400/30 text-indigo-200"
@@ -112,13 +134,76 @@ function MessageInput({ suggestion }) {
         </div>
       )}
 
+      {file && (
+        <div className="w-full max-w-3xl mb-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-slate-300">
+          <Paperclip size={12} className="text-indigo-300 shrink-0" />
+          <span className="truncate flex-1">{file.name}</span>
+          <button onClick={() => setFile(null)} className="text-slate-500 hover:text-white cursor-pointer shrink-0">
+            <X size={13} />
+          </button>
+        </div>
+      )}
+
       <div className="w-full max-w-3xl flex items-end gap-1 px-2 py-2 rounded-2xl bg-white/5 border border-white/8 focus-within:border-white/15">
-        <button
-          title="Attach file"
-          className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 cursor-pointer"
-        >
-          <Paperclip size={18} />
-        </button>
+        <input
+          ref={imageRef}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={(e) => {
+            setFile(e.target.files[0] || null);
+            e.target.value = "";
+          }}
+        />
+        <input
+          ref={pdfRef}
+          type="file"
+          accept=".pdf,application/pdf"
+          hidden
+          onChange={(e) => {
+            setFile(e.target.files[0] || null);
+            e.target.value = "";
+          }}
+        />
+
+        <div className="relative">
+          <button
+            title={FILE_AGENTS.includes(agent) ? "Attach a file" : "This agent doesn't accept files"}
+            disabled={!FILE_AGENTS.includes(agent)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setAttachOpen(!attachOpen);
+            }}
+            className={`p-2 rounded-lg cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed ${file ? "text-indigo-300" : "text-slate-400 hover:text-white hover:bg-white/5"}`}
+          >
+            <Paperclip size={18} />
+          </button>
+
+          {attachOpen && (
+            <div className="absolute bottom-11 left-0 z-20 bg-[#13151c] border border-white/10 rounded-lg shadow-lg p-1 whitespace-nowrap">
+              <button
+                disabled={!IMAGE_AGENTS.includes(agent)}
+                onClick={() => {
+                  setAttachOpen(false);
+                  imageRef.current?.click();
+                }}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs text-slate-300 hover:bg-white/5 w-full cursor-pointer rounded-sm disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ImageIcon size={13} className="text-amber-400" /> Upload image
+              </button>
+              <button
+                disabled={!PDF_AGENTS.includes(agent)}
+                onClick={() => {
+                  setAttachOpen(false);
+                  pdfRef.current?.click();
+                }}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs text-slate-300 hover:bg-white/5 w-full cursor-pointer rounded-sm disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <FileText size={13} className="text-orange-400" /> Upload PDF
+              </button>
+            </div>
+          )}
+        </div>
 
         <textarea
           rows={1}
