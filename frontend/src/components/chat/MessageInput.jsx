@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Paperclip, Mic, SendHorizontal, Sparkles, MessageSquare, Globe, Code2, FileText, Presentation, Image } from "lucide-react";
+import { Paperclip, Mic, SendHorizontal, Sparkles, MessageSquare, Globe, Code2, FileText, Presentation, Eye } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendMessage } from "../../features/sendMessage";
 import {getCredits} from "../../features/getCredits.js"
@@ -19,7 +19,7 @@ const agents = [
   { name: "coding", label: "Coding", icon: Code2, color: "text-indigo-400" },
   { name: "pdf", label: "PDF", icon: FileText, color: "text-orange-400" },
   { name: "ppt", label: "PPT", icon: Presentation, color: "text-pink-400" },
-  { name: "vision", label: "Image", icon: Image, color: "text-amber-400" },
+  { name: "vision", label: "Vision", icon: Eye, color: "text-amber-400" },
 ];
 
 // keep in sync with AGENT_COSTS in backend/services/agent/controllers/agent.controller.js
