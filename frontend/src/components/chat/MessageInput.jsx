@@ -13,13 +13,34 @@ import {
 import { createConversation } from "../../features/createConversation.js";
 import { generateTitle } from "../../features/generateTitle.js";
 const agents = [
-  { name: "auto", label: "Auto", icon: Sparkles, color: "text-indigo-300" },
-  { name: "chat", label: "Chat", icon: MessageSquare, color: "text-cyan-400" },
-  { name: "search", label: "Search", icon: Globe, color: "text-emerald-400" },
-  { name: "coding", label: "Coding", icon: Code2, color: "text-indigo-400" },
-  { name: "pdf", label: "PDF", icon: FileText, color: "text-orange-400" },
-  { name: "ppt", label: "PPT", icon: Presentation, color: "text-pink-400" },
-  { name: "vision", label: "Vision", icon: Eye, color: "text-amber-400" },
+  { name: "auto", label: "Auto", icon: Sparkles, color: "text-indigo-300",
+    desc: "Picks the best agent for your request automatically.",
+    cost: "2–5 credits (based on the agent chosen)",
+    note: "Attached files route to the right analyzer on their own." },
+  { name: "chat", label: "Chat", icon: MessageSquare, color: "text-cyan-400",
+    desc: "General questions, explanations and conversation.",
+    cost: "2 credits per response",
+    note: "Every response costs credits — even a simple “hi”." },
+  { name: "search", label: "Search", icon: Globe, color: "text-emerald-400",
+    desc: "Live answers from the web — news, prices, current events.",
+    cost: "3 credits per response",
+    note: "Best for questions that need up-to-date info." },
+  { name: "coding", label: "Coding", icon: Code2, color: "text-indigo-400",
+    desc: "Builds apps & components with live preview, debugs and reviews code.",
+    cost: "5 credits per response",
+    note: "Generated projects open in the artifact panel." },
+  { name: "pdf", label: "PDF", icon: FileText, color: "text-orange-400",
+    desc: "Generates PDF documents, or answers questions about an uploaded PDF.",
+    cost: "5 credits per response",
+    note: "Attach a PDF with 📎 to ask about its content." },
+  { name: "ppt", label: "PPT", icon: Presentation, color: "text-pink-400",
+    desc: "Creates downloadable PowerPoint presentations.",
+    cost: "5 credits per response",
+    note: "Download links expire in 24 hours." },
+  { name: "vision", label: "Vision", icon: Eye, color: "text-amber-400",
+    desc: "Generates realistic images, or analyzes an uploaded image.",
+    cost: "5 credits per response",
+    note: "Attach an image with 📎 to have it analyzed." },
 ];
 
 const AGENT_COSTS = { chat: 2, search: 3, coding: 5, pdf: 5, ppt: 5, vision: 5 };
@@ -116,7 +137,7 @@ function MessageInput({ suggestion }) {
                 if (!allowed.includes(a.name)) setFile(null);
               }
             }}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs cursor-pointer border transition-colors ${
+            className={`group relative flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs cursor-pointer border transition-colors ${
               agent === a.name
                 ? "bg-indigo-500/15 border-indigo-400/30 text-indigo-200"
                 : "bg-white/3 border-white/8 text-slate-400 hover:bg-white/5"
@@ -124,6 +145,14 @@ function MessageInput({ suggestion }) {
           >
             <a.icon size={13} className={a.color} />
             {a.label}
+
+            {/* hover info card */}
+            <div className="absolute bottom-full left-0 mb-2 w-56 p-3 rounded-xl bg-[#13151c] border border-white/10 shadow-lg text-left opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-30">
+              <p className="text-xs font-medium text-slate-100">{a.label}</p>
+              <p className="text-[11px] text-slate-400 mt-1">{a.desc}</p>
+              <p className="text-[11px] text-indigo-300 mt-1.5 flex items-center gap-1">💰 {a.cost}</p>
+              <p className="text-[10px] text-slate-500 mt-1">{a.note}</p>
+            </div>
           </button>
         ))}
       </div>
@@ -209,6 +238,12 @@ function MessageInput({ suggestion }) {
           rows={1}
           value={text}
           onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault(); // stop the newline
+              if (text.trim()) handleSendMessage();
+            }
+          }}
           placeholder="Ask anything..."
           className="flex-1 min-w-0 bg-transparent outline-none text-sm placeholder:text-slate-600 resize-none field-sizing-content max-h-40 py-2"
         />
@@ -230,7 +265,7 @@ function MessageInput({ suggestion }) {
         </button>
       </div>
       <p className="text-center text-[10px] text-slate-600 mt-2">
-        Praxis can make mistakes. Verify important info.
+        Enter to send · Shift+Enter for a new line · Praxis can make mistakes.
       </p>
     </div>
   );
