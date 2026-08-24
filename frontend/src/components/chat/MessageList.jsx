@@ -67,7 +67,7 @@ function MessageList() {
 
         {thinking && (
           <div className="flex justify-start">
-            <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl rounded-bl-sm bg-white/5 text-sm text-slate-500">
+            <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl rounded-bl-sm  text-sm text-slate-500">
               <span className="flex items-center gap-0.75">
                 {[
                   { color: "#6d5efc", height: 6 },
