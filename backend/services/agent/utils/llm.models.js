@@ -27,6 +27,8 @@ export const getllmModel = (agent)=>{
         case "pdf":
             return groq
         case "ppt":
+            return groq
+        case "imageAnalyzer":
             return gemini
         default:
             return gemini;
