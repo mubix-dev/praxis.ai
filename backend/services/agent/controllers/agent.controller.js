@@ -48,13 +48,16 @@ export const agent = async(req,res)=>{
         if(typeof response.answer !== "string"){
             response.answer = JSON.stringify(response.answer)
         }
-        await addMessage(conversationId,"user",prompt)
+        
+        const userContent = file ? `${prompt}\n\n📎 *${file.originalname}*` : prompt
+
+        await addMessage(conversationId,"user",userContent)
         await addMessage(conversationId,"assistant",response.answer,response.artifact)
 
         await axios.post(`${process.env.CHAT_SERVICE}/messages`,{
             conversationId,
             role:"user",
-            content:prompt
+            content:userContent
         })
         await axios.post(`${process.env.CHAT_SERVICE}/messages`,{
             conversationId,
