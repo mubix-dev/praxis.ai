@@ -4,24 +4,18 @@ import { getMemory } from "../utils/memory.js";
 const AGENTS = ["chat", "search", "coding", "pdf", "ppt", "vision"];
 
 export const router = async (state) => {
+
+  if (state.file) {
+    return {
+      ...state,
+      agent: state.file.mimetype?.startsWith("image/") ? "imageAnalyzer" : "pdfRag",
+    }
+  }
+
   if(state.agent && state.agent !== "auto"){
     return {
       ...state,
       agent:state.agent
-    }
-  }
-
-  if(state.file.mimetype === "application/pdf"){
-    return{
-      ...state,
-      agent:"pdfRag"
-    }
-  }
-
-  if(state.file.mimetype.startsWith("image/")){
-    return{
-      ...state,
-      agent:"imageAnalyzer"
     }
   }
 
