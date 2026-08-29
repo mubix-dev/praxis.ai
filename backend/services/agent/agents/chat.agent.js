@@ -6,10 +6,13 @@ import {
 import { getllmModel } from "../utils/llm.models.js";
 import { getMemory } from "../utils/memory.js";
 import { PRAXIS_IDENTITY } from "../utils/identity.js";
+import { checkAgentLimit } from "../utils/agentLimit.js"
 
 export const chatAgent = async (state) => {
-  const llm = getllmModel("chat");
-  const sysPrompt = `You are Praxis, an intelligent AI assistant that helps with questions, explanations, brainstorming and everyday tasks.
+  try {
+    await checkAgentLimit(state.userId,"chat")
+    const llm = getllmModel("chat");
+    const sysPrompt = `You are Praxis, an intelligent AI assistant that helps with questions, explanations, brainstorming and everyday tasks.
 
 Personality:
 - Warm, clear and direct — like a sharp, friendly colleague, never robotic or overly formal.
@@ -37,39 +40,47 @@ ${PRAXIS_IDENTITY}
 
 Remember: the user chose Praxis to save time. Make every reply feel effortless to read.`;
 
-  const history = (await getMemory(state.conversationId)) || [];
+    const history = (await getMemory(state.conversationId)) || [];
 
-  let finalSysPrompt = sysPrompt;
+    let finalSysPrompt = sysPrompt;
 
-  const lastArtifact = [...history].reverse().find((m) => m.artifact)?.artifact;
-  if (lastArtifact) {
-    finalSysPrompt += `\n\nThe user's current code project (built earlier in this conversation): "${lastArtifact.title}" (${lastArtifact.framework}). When they mention "the code", "the html", etc., they mean these files:\n` +
-      lastArtifact.files.map((f) => `--- ${f.path} ---\n${f.content}`).join("\n\n");
+    const lastArtifact = [...history].reverse().find((m) => m.artifact)?.artifact;
+    if (lastArtifact) {
+      finalSysPrompt += `\n\nThe user's current code project (built earlier in this conversation): "${lastArtifact.title}" (${lastArtifact.framework}). When they mention "the code", "the html", etc., they mean these files:\n` +
+        lastArtifact.files.map((f) => `--- ${f.path} ---\n${f.content}`).join("\n\n");
+    }
+
+    if (state.searchResults) {
+      finalSysPrompt += `\n\nLive web search results relevant to the user's question:\n\n${state.searchResults}\n\nUse these results to answer accurately and mention sources when useful. If the results don't cover the question, say so instead of guessing and do not mention internal tools.`;
+    }
+
+    const messages = [new SystemMessage(finalSysPrompt)];
+
+    const stripUrls = (text) =>
+      String(text).replace(/https:\/\/[^\s)]+X-Amz[^\s)]*/g, "[file link]");
+
+    history.map((msg) => {
+      if (msg?.role == "user") {
+        messages.push(new HumanMessage(msg?.content));
+      }
+      if (msg?.role == "assistant") {
+        messages.push(new AIMessage(stripUrls(msg?.content)));
+      }
+    });
+
+    messages.push(new HumanMessage(state.prompt));
+    const response = await llm.invoke(messages);
+
+    return {
+      ...state,
+      aiResponse: response.content,
+    };
+  } catch (error) {
+    console.log(error)
+    return {
+      ...state,
+      aiResponse:error?.data?.message
+    }
   }
 
-  if (state.searchResults) {
-    finalSysPrompt += `\n\nLive web search results relevant to the user's question:\n\n${state.searchResults}\n\nUse these results to answer accurately and mention sources when useful. If the results don't cover the question, say so instead of guessing and do not mention internal tools.`;
-  }
-
-  const messages = [new SystemMessage(finalSysPrompt)];
-
-  const stripUrls = (text) =>
-    String(text).replace(/https:\/\/[^\s)]+X-Amz[^\s)]*/g, "[file link]");
-
-  history.map((msg) => {
-    if (msg?.role == "user") {
-      messages.push(new HumanMessage(msg?.content));
-    }
-    if (msg?.role == "assistant") {
-      messages.push(new AIMessage(stripUrls(msg?.content)));
-    }
-  });
-
-  messages.push(new HumanMessage(state.prompt));
-  const response = await llm.invoke(messages);
-
-  return {
-    ...state,
-    aiResponse: response.content,
-  };
 };
