@@ -370,7 +370,7 @@ function MessageInput({ suggestion }) {
         </button>
       </div>
       <p className="text-center text-[10px] text-slate-600 mt-2">
-        Enter to send · Shift+Enter for a new line · Praxis can make mistakes.
+        Praxis can make mistakes.
       </p>
     </div>
   );
