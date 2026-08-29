@@ -4,10 +4,11 @@ import { addMessage } from "../utils/memory.js"
 import redis from "../../../shared/redis/redis.js"
 import { getllmModel } from "../utils/llm.models.js"
 
+
 const AGENT_COSTS = { chat: 2, search: 3, coding: 5, pdf: 5, ppt: 5, vision: 5,pdfRag:5,imageAnalyzer:5 }
 const MIN_COST = Math.min(...Object.values(AGENT_COSTS))
 
-export const agent = async(req,res)=>{
+export const agent = async(req,res,next)=>{
     try {
         const {prompt,conversationId,agent} = req.body
         const file = req.file
@@ -29,6 +30,8 @@ export const agent = async(req,res)=>{
         const result = await graph.invoke({
             prompt,conversationId,agent,file
         })
+        
+        
 
         const cost = AGENT_COSTS[result.agent] ?? 2
         await axios.post(`${process.env.BILLING_SERVICE}/deduct`,
@@ -69,8 +72,9 @@ export const agent = async(req,res)=>{
 
         return res.status(200).json(response)
     } catch (error) {
-        console.error("agent error:", error?.response?.data || error);
-        return res.status(500).json({ message: "Internal server error" });
+        // console.error("agent error:", error?.response?.data || error);
+        // return res.status(500).json({ message: "Internal server error" });
+        next(error)
     }
 }
 
