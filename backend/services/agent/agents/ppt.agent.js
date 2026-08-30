@@ -2,9 +2,14 @@ import { getllmModel } from "../utils/llm.models.js";
 import { getFromS3, uploadToS3 } from "../utils/s3.js";
 import { buildPpt } from "../utils/ppt.js";
 import { getMemory } from "../utils/memory.js";
+import { checkAgentLimit } from "../utils/agentLimit.js"
+import {deductCredits} from "../utils/deductCredits.js"
 
 export const pptAgent = async (state) => {
   try {
+    await checkAgentLimit(state.userId, "ppt")
+    await deductCredits(5,state.userId)
+
     const llm = getllmModel("ppt");
 
     const history = (await getMemory(state.conversationId)) || [];
@@ -68,7 +73,7 @@ ${state.prompt}`);
       aiResponse: `Your presentation is ready! 📊\n\n**${pptData.title}**\n${pptData.summary || ""}\n\n[⬇ Download PPT](${viewUrl})\n\n*This link expires in 24 hours — download the file to keep it.*`,
     };
   } catch (error) {
-    console.log("pptAgent error:", error.message);
+    console.log("pptAgent error:", error);
     return {
       ...state,
       aiResponse:
