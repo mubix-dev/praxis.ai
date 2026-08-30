@@ -1,9 +1,9 @@
 import redis from '../../../shared/redis/redis.js'
 
 const Limits = {
-    chat:3,
-    search:10,
-    coding:1,
+    chat:10,
+    search:8,
+    coding:2,
     pdf:3,
     ppt:3,
     image:3
