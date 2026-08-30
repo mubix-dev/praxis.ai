@@ -4,9 +4,8 @@ import { deductCredits } from "../utils/deductCredits.js"
 
 export const searchAgent = async (state) => {
     try {
-        const cost = 1
         await checkAgentLimit(state.userId, "search")
-        await deductCredits(cost, state.userId)
+        await deductCredits(1, state.userId)
         const data = await searchTool.invoke({ query: state.prompt })
 
         const searchResults = data.results
