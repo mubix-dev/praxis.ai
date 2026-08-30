@@ -292,6 +292,7 @@ function MessageInput({ suggestion }) {
           hidden
           onChange={(e) => {
             setFile(e.target.files[0] || null);
+            setShowPreview(true)
             e.target.value = "";
           }}
         />
