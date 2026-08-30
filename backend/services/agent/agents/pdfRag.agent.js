@@ -4,9 +4,14 @@ import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { vectorStore } from "../db/vectorDB.js";
 import { getllmModel } from "../utils/llm.models.js";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import { checkAgentLimit } from "../utils/agentLimit.js"
+import {deductCredits} from "../utils/deductCredits.js"
 
 export const pdfRagAgent = async (state) => {
   try {
+    await checkAgentLimit(state.userId, "pdf")
+    await deductCredits(5,state.userId)
+
     const buffer = fs.readFileSync(state.file.path);
 
     const doc = mupdf.Document.openDocument(buffer, "application/pdf");
@@ -77,7 +82,7 @@ Question: ${state.prompt?.trim() || "Summarize this document."}`),
 
     return { ...state, aiResponse: response.content };
   } catch (error) {
-    console.log("pdfRagAgent error:", error.message);
+    console.log("pdfRagAgent error:", error);
     await fs.promises.unlink(state.file?.path).catch(() => {});
 
     if (error.message?.includes("must not be empty")) {
