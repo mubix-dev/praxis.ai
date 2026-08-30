@@ -1,12 +1,8 @@
 import axios from "axios"
 import { graph } from "../graph/agent.workflow.js"
 import { addMessage } from "../utils/memory.js"
-import redis from "../../../shared/redis/redis.js"
 import { getllmModel } from "../utils/llm.models.js"
 
-
-const AGENT_COSTS = { chat: 2, search: 3, coding: 5, pdf: 5, ppt: 5, vision: 5,pdfRag:5,imageAnalyzer:5 }
-const MIN_COST = Math.min(...Object.values(AGENT_COSTS))
 
 export const agent = async(req,res,next)=>{
     try {
@@ -18,29 +14,10 @@ export const agent = async(req,res,next)=>{
 
         const userId = req.headers["x-user-id"]
 
-        const balance = await axios.get(`${process.env.BILLING_SERVICE}/credits`, {
-            headers: { "x-user-id": userId },
-        }).catch((e) => e.response)
-
-        const requiredCost = agent && agent !== "auto" ? (AGENT_COSTS[agent] ?? MIN_COST) : MIN_COST
-        if ((balance?.data?.credits ?? 0) < requiredCost) {
-            return res.status(402).json({ message: "Insufficient credits" })
-        }
-
         const result = await graph.invoke({
-            prompt,conversationId,agent,file
+            userId,prompt,conversationId,agent,file
         })
         
-        
-
-        const cost = AGENT_COSTS[result.agent] ?? 2
-        await axios.post(`${process.env.BILLING_SERVICE}/deduct`,
-            { cost },
-            { headers: {
-                "x-internal-key": process.env.INTERNAL_API_KEY,
-                "x-user-id": userId,
-            }},
-        ).catch((e) => e.response)
 
         let response = {
             answer:result.aiResponse || "This specialist is still being built — try asking a general question for now!",
