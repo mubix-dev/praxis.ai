@@ -256,7 +256,7 @@ function Sidebar() {
                           e.stopPropagation();
                           setMenuId(menuId === conv._id ? null : conv._id);
                         }}
-                        className={`shrink-0 text-slate-500 hover:text-white cursor-pointer ${menuId === conv._id ? "opacity-100" : "opacity-100 group-hover:opacity-100"}`}
+                        className={`shrink-0 text-slate-700 hover:text-white cursor-pointer ${menuId === conv._id ? "opacity-100" : "opacity-100 group-hover:opacity-100"}`}
                       >
                         <MoreHorizontal size={14} />
                       </button>
