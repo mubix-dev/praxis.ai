@@ -1,9 +1,14 @@
 import fs from "fs/promises"
 import { getllmModel } from "../utils/llm.models.js"
 import { HumanMessage, SystemMessage } from "@langchain/core/messages"
+import { checkAgentLimit } from "../utils/agentLimit.js"
+import {deductCredits} from "../utils/deductCredits.js"
 
 export const imageAnalyzer = async (state) => {
     try {
+        await checkAgentLimit(state.userId, "image")
+        await deductCredits(3,state.userId)
+
         const llm = getllmModel("imageAnalyzer")
 
         const imageBuffer = await fs.readFile(state.file.path)
@@ -47,7 +52,7 @@ Security rules:
 
         return { ...state, aiResponse: response.content }
     } catch (error) {
-        console.log("imageAnalyzer error:", error.message)
+        console.log("imageAnalyzer error:", error)
         await fs.unlink(state.file?.path).catch(() => {})
         return {
             ...state,
