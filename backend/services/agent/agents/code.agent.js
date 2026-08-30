@@ -64,10 +64,12 @@ UI requirements:
 - Modern, clean, minimal design: generous spacing, rounded corners, subtle borders and shadows, elegant typography
 - Fully responsive, mobile-first — must look right from 320px phones to wide desktops
 - Polished dark theme by default (unless the user asks for light), with real hover/focus states and smooth transitions
+- Should be complete website
 
 Code requirements:
 - Complete and runnable — every file full, no placeholders, no "..." omissions, no TODOs
 - Clean, readable, conventionally structured for the chosen framework
+- Use Unsplash for images
 
 Return ONLY valid JSON — no markdown fences, no text before or after — in exactly this shape:
 {
