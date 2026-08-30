@@ -2,9 +2,14 @@ import { getllmModel } from "../utils/llm.models.js";
 import { getFromS3, uploadToS3 } from "../utils/s3.js";
 import { buildPdf } from "../utils/pdf.js";
 import { getMemory } from "../utils/memory.js";
+import { checkAgentLimit } from "../utils/agentLimit.js"
+import {deductCredits} from "../utils/deductCredits.js"
 
 export const pdfAgent = async (state) => {
   try {
+    await checkAgentLimit(state.userId, "pdf")
+    await deductCredits(5,state.userId)
+
     const llm = getllmModel("pdf");
 
     const history = (await getMemory(state.conversationId)) || [];
@@ -66,7 +71,7 @@ ${state.prompt}`);
       aiResponse: `Your PDF is ready! 📄\n\n**${docData.title}**\n${docData.summary || ""}\n\n[👁 View PDF](${viewUrl})\n\n*This link expires in 24 hours — download the file to keep it.*`,
     };
   } catch (error) {
-    console.log("pdfAgent error:", error.message);
+    console.log("pdfAgent error:", error);
     return {
       ...state,
       aiResponse:
