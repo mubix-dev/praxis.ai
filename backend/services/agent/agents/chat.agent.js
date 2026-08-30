@@ -6,11 +6,16 @@ import {
 import { getllmModel } from "../utils/llm.models.js";
 import { getMemory } from "../utils/memory.js";
 import { PRAXIS_IDENTITY } from "../utils/identity.js";
+
 import { checkAgentLimit } from "../utils/agentLimit.js"
+import {deductCredits} from "../utils/deductCredits.js"
 
 export const chatAgent = async (state) => {
   try {
-    await checkAgentLimit(state.userId,"chat")
+   
+    await checkAgentLimit(state.userId, "chat")
+    await deductCredits(2,state.userId)
+
     const llm = getllmModel("chat");
     const sysPrompt = `You are Praxis, an intelligent AI assistant that helps with questions, explanations, brainstorming and everyday tasks.
 
@@ -76,10 +81,10 @@ Remember: the user chose Praxis to save time. Make every reply feel effortless t
       aiResponse: response.content,
     };
   } catch (error) {
-    console.log(error)
+    console.log("chatAgent error:", error);
     return {
       ...state,
-      aiResponse:error?.data?.message
+      aiResponse: error?.data?.message
     }
   }
 
