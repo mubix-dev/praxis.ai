@@ -3,8 +3,15 @@ import axios from "axios";
 import { getFromS3, uploadToS3 } from "../utils/s3.js";
 import { getMemory } from "../utils/memory.js";
 
+import { checkAgentLimit } from "../utils/agentLimit.js"
+import {deductCredits} from "../utils/deductCredits.js"
+
 export const visionAgent = async (state) => {
   try {
+
+    await checkAgentLimit(state.userId, "chat")
+    await deductCredits(5,state.userId)
+
     const llm = getllmModel("vision");
 
     const history = (await getMemory(state.conversationId)) || [];
@@ -59,7 +66,7 @@ ${state.prompt}`);
       aiResponse: `Here's your image! 🎨\n\n[⬇ Download image](${downloadUrl})`,
     };
   } catch (error) {
-    console.log("visionAgent error:", error.message);
+    console.log("visionAgent error:", error);
     return {
       ...state,
       images: [],
