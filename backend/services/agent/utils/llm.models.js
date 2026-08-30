@@ -4,6 +4,7 @@ import { ChatOpenRouter } from "@langchain/openrouter";
 
 const groq = new ChatGroq({
     model: "openai/gpt-oss-120b",
+    maxTokens:2048
 })
 
 const gemini = new ChatGoogleGenerativeAI({
@@ -31,6 +32,6 @@ export const getllmModel = (agent)=>{
         case "imageAnalyzer":
             return gemini
         default:
-            return gemini;
+            return groq;
     }
 }
