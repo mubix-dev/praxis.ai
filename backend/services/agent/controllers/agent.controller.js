@@ -20,7 +20,7 @@ export const agent = async(req,res,next)=>{
         
 
         let response = {
-            answer:result.aiResponse || "This specialist is still being built — try asking a general question for now!",
+            answer:result.aiResponse || "Sorry! I can't process your request right now. Please try again later.",
             images : result.images,
             artifact : result.artifact || null
         }
