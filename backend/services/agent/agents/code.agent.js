@@ -1,20 +1,26 @@
 import { getllmModel } from "../utils/llm.models.js"
 import { PRAXIS_IDENTITY } from "../utils/identity.js"
 import { getMemory } from "../utils/memory.js"
+import { checkAgentLimit } from "../utils/agentLimit.js"
+import {deductCredits} from "../utils/deductCredits.js"
 
 export const codingAgent = async (state) => {
-  const intentllm = getllmModel("intent")
-  const llm = getllmModel("coding")
+  try {
+    await checkAgentLimit(state.userId, "coding")
+    await deductCredits(5,state.userId)
+    
+    const intentllm = getllmModel("intent")
+    const llm = getllmModel("coding")
 
-  const history = (await getMemory(state.conversationId)) || []
-  const lastArtifact = [...history].reverse().find((m) => m.artifact)?.artifact
+    const history = (await getMemory(state.conversationId)) || []
+    const lastArtifact = [...history].reverse().find((m) => m.artifact)?.artifact
 
-  const artifactContext = lastArtifact
-    ? `\n\nThe user's current project (built earlier in this conversation): "${lastArtifact.title}" (${lastArtifact.framework})\n` +
+    const artifactContext = lastArtifact
+      ? `\n\nThe user's current project (built earlier in this conversation): "${lastArtifact.title}" (${lastArtifact.framework})\n` +
       lastArtifact.files.map((f) => `--- ${f.path} ---\n${f.content}`).join("\n\n")
-    : ""
+      : ""
 
-  const intentResponse = await intentllm.invoke(`You are an intent classifier for a coding assistant.
+    const intentResponse = await intentllm.invoke(`You are an intent classifier for a coding assistant.
 Classify the user's request into exactly one of:
 CODE_GENERATION - wants new code, an app, component, page or file built
 CODE_REVIEW - wants existing code reviewed for quality or bugs
@@ -30,10 +36,10 @@ Reply with EXACTLY one word from the list. No punctuation, no explanation.
 User request:
 ${state.prompt}`)
 
-  const intent = intentResponse.content.trim().toUpperCase()
+    const intent = intentResponse.content.trim().toUpperCase()
 
-  if (intent === "GENERAL") {
-    const response = await llm.invoke(`You are Praxis, an intelligent, warm and helpful AI assistant.
+    if (intent === "GENERAL") {
+      const response = await llm.invoke(`You are Praxis, an intelligent, warm and helpful AI assistant.
 Answer the user's question clearly in markdown. Be genuinely helpful even though this isn't a coding question.
 
 ${PRAXIS_IDENTITY}
@@ -41,11 +47,11 @@ ${PRAXIS_IDENTITY}
 User request:
 ${state.prompt}`)
 
-    return { ...state, aiResponse: response.content }
-  }
+      return { ...state, aiResponse: response.content }
+    }
 
-  if (intent === "CODE_GENERATION") {
-    const genPrompt = `You are Praxis Code, an expert full-stack engineer and UI designer.
+    if (intent === "CODE_GENERATION") {
+      const genPrompt = `You are Praxis Code, an expert full-stack engineer and UI designer.
 
 Build exactly what the user asks, in the framework THEY request (React, Vue, Next.js, etc. are all fine).
 If NO framework is specified and it's web content, default to plain HTML + CSS + JavaScript as exactly three files:
@@ -86,41 +92,41 @@ ${artifactContext ? "\nIf the user is asking to MODIFY the current project below
 User request:
 ${state.prompt}`
 
-    const parseArtifact = (content) => {
-      let raw = typeof content === "string" ? content : String(content)
-      const start = raw.indexOf("{")
-      const end = raw.lastIndexOf("}")
-      if (start === -1 || end <= start) return null
-      try {
-        const artifact = JSON.parse(raw.slice(start, end + 1))
-        return artifact?.files?.length ? artifact : null
-      } catch {
-        return null
+      const parseArtifact = (content) => {
+        let raw = typeof content === "string" ? content : String(content)
+        const start = raw.indexOf("{")
+        const end = raw.lastIndexOf("}")
+        if (start === -1 || end <= start) return null
+        try {
+          const artifact = JSON.parse(raw.slice(start, end + 1))
+          return artifact?.files?.length ? artifact : null
+        } catch {
+          return null
+        }
       }
-    }
 
-    let artifact = parseArtifact((await llm.invoke(genPrompt)).content)
-    if (!artifact) {
-      // one retry — truncated or malformed JSON happens occasionally
-      artifact = parseArtifact((await llm.invoke(genPrompt)).content)
-    }
+      let artifact = parseArtifact((await llm.invoke(genPrompt)).content)
+      if (!artifact) {
+        // one retry — truncated or malformed JSON happens occasionally
+        artifact = parseArtifact((await llm.invoke(genPrompt)).content)
+      }
 
-    if (artifact) {
+      if (artifact) {
+        return {
+          ...state,
+          artifact,
+          aiResponse: `${artifact.explanation}\n\n*Open the artifact panel to view the code and live preview.*`,
+        }
+      }
+
       return {
         ...state,
-        artifact,
-        aiResponse: `${artifact.explanation}\n\n*Open the artifact panel to view the code and live preview.*`,
+        aiResponse:
+          "I wasn't able to package that project into the artifact view this time — it may have been too large to generate in one go. Please try again, or break the request into smaller parts (for example, one page or component at a time).",
       }
     }
 
-    return {
-      ...state,
-      aiResponse:
-        "I wasn't able to package that project into the artifact view this time — it may have been too large to generate in one go. Please try again, or break the request into smaller parts (for example, one page or component at a time).",
-    }
-  }
-
-  const response = await llm.invoke(`You are Praxis Code, an expert senior software engineer.
+    const response = await llm.invoke(`You are Praxis Code, an expert senior software engineer.
 The user's request type is: ${intent}.
 
 - Answer in clear markdown: code blocks with language tags, short headings, bullet points where useful
@@ -135,5 +141,12 @@ ${PRAXIS_IDENTITY}
 User request:
 ${state.prompt}`)
 
-  return { ...state, aiResponse: response.content }
+    return { ...state, aiResponse: response.content }
+  } catch (error) {
+    console.log("codeAgent error:", error);
+    return {
+      ...state,
+      aiResponse: error?.data?.message
+    }
+  }
 }
