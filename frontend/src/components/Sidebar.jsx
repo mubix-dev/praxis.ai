@@ -207,12 +207,13 @@ function Sidebar() {
 
         <div className={`w-64 h-full flex flex-col transition-opacity duration-150 ${open ? "opacity-100 delay-150" : "md:opacity-0 md:pointer-events-none"}`}>
 
-          <div className="p-4 flex items-center justify-between">
+          <div className="p-4 flex items-center justify-between relative">
             <img src="/logo-static.svg" alt="PraxisAI" className="h-20 w-auto" />
+            <p className=" absolute right-12 bottom-8 font-bold text-gray-500 text-[8px] tracking-widest">BETA</p>
             <button
               onClick={() => setOpen(false)}
               className="p-2 rounded-lg hover:bg-white/10 text-slate-400 cursor-pointer"
-            >
+              >
               <PanelLeftClose size={18} />
             </button>
           </div>
@@ -255,7 +256,7 @@ function Sidebar() {
                           e.stopPropagation();
                           setMenuId(menuId === conv._id ? null : conv._id);
                         }}
-                        className={`shrink-0 text-slate-500 hover:text-white cursor-pointer ${menuId === conv._id ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                        className={`shrink-0 text-slate-500 hover:text-white cursor-pointer ${menuId === conv._id ? "opacity-100" : "opacity-100 group-hover:opacity-100"}`}
                       >
                         <MoreHorizontal size={14} />
                       </button>
