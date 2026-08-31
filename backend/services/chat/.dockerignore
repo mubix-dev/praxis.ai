@@ -1,0 +1,48 @@
+# Version Control
+.git
+.gitignore
+.hg
+.svn
+
+# Application Secrets & Environment Configurations
+.env
+.env.*
+*.pem
+*.key
+id_rsa
+
+# Dependency Directories
+node_modules/
+jspm_packages/
+web_modules/
+venv/
+.venv
+env/
+
+# Build Artifacts, Caches, & Outputs
+dist/
+build/
+out/
+target/
+.next/
+.nuxt/
+.cache/
+.npm
+.eslintcache
+__pycache__/
+*.pyc
+
+# Local Logs & IDE Configurations
+*.log
+logs/
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Docker Files (Optional optimization)
+Dockerfile
+docker-compose.yml
+.dockerignore
