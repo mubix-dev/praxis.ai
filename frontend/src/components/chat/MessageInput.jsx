@@ -13,6 +13,7 @@ import {
   Eye,
   X,
   Image as ImageIcon,
+  MicOff,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { sendMessage } from "../../features/sendMessage";
@@ -119,6 +120,55 @@ function MessageInput({ suggestion }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const [listening, setListening] = useState(false)
+  const recognitionRef = useRef()
+
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      console.warn("Speech Recognition API is not supported in this browser.");
+      return;
+    }
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "en-US";
+    recognition.interimResults = true;
+    recognition.continuous = true; 
+
+    recognition.onresult = (event) => {
+      let currentTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        currentTranscript += event.results[i][0].transcript;
+      }
+      setText(currentTranscript);
+    };
+
+    recognition.onend =()=>{
+      setListening(false)
+    }
+    
+    recognitionRef.current = recognition
+
+  }, []);
+
+
+  const toggleMic = ()=>{
+    if(!recognitionRef.current){
+      alert("Speech Recognition not supported!")
+    }
+
+    if(listening){
+      recognitionRef.current.stop()
+      setListening(false)
+    }else{
+      recognitionRef.current.start()
+      setListening(true)
+    }
+  }
+
+
+
   useEffect(() => {
     if (suggestion) setText(suggestion);
   }, [suggestion]);
@@ -212,11 +262,10 @@ function MessageInput({ suggestion }) {
                 if (!allowed.includes(a.name)) setFile(null);
               }
             }}
-            className={`group relative flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs cursor-pointer border transition-colors ${
-              agent === a.name
-                ? "bg-indigo-500/15 border-indigo-400/30 text-indigo-200"
-                : "bg-white/3 border-white/8 text-slate-400 hover:bg-white/5"
-            }`}
+            className={`group relative flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs cursor-pointer border transition-colors ${agent === a.name
+              ? "bg-indigo-500/15 border-indigo-400/30 text-indigo-200"
+              : "bg-white/3 border-white/8 text-slate-400 hover:bg-white/5"
+              }`}
           >
             <a.icon size={13} className={a.color} />
             {a.label}
@@ -355,10 +404,11 @@ function MessageInput({ suggestion }) {
         />
 
         <button
+          onClick={toggleMic}
           title="Voice input"
-          className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 cursor-pointer"
+          className={`p-2 rounded-lg text-slate-400 ${listening ? "bg-red-500 text-white" : ""} hover:text-white cursor-pointer`}
         >
-          <Mic size={18} />
+          {listening ? <Mic size={18} /> : <MicOff size={18}/>}
         </button>
 
         <button
