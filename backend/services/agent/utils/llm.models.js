@@ -12,10 +12,14 @@ const gemini = new ChatGoogleGenerativeAI({
 })
 
 const openrouter = new ChatOpenRouter({
-    model:"deepseek/deepseek-chat",
-    temperature:0,
-    maxTokens:8000
+    model: "deepseek/deepseek-chat",
+    models: ["deepseek/deepseek-chat", "qwen/qwen3-coder", "z-ai/glm-4.6"], 
+    provider: { sort: "throughput", allow_fallbacks: true },
+    temperature: 0,
+    maxTokens: 8000,
+    maxRetries: 3,
 })
+
 
 export const getllmModel = (agent)=>{
     switch (agent) {
