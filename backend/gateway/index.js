@@ -13,6 +13,13 @@ const PORT = process.env.PORT || 3000
 
 const app = express()
 
+// Stripe signs the raw bytes: no auth (Stripe sends no cookies) and no body
+// parsing anywhere on this path. Must stay above express.json().
+app.use("/api/billing/webhook", proxy(process.env.BILLING_SERVICE, {
+    parseReqBody: false,
+    proxyReqPathResolver: () => "/webhook"
+}))
+
 app.use(express.json())
 app.use(cookieParser())
 app.use(morgan("dev"))
