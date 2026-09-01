@@ -30,7 +30,7 @@ app.use("/api/billing",isAuth,proxyWithHeaders(process.env.BILLING_SERVICE))
 
 
 app.get("/",(req,res)=>{
-    return res.status(200).json({message:"Gateway is running!"})
+    return res.status(200).json({message:"Gateway is running!!"})
 })
 
 
