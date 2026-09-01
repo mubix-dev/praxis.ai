@@ -2,13 +2,13 @@ import { getllmModel } from "../utils/llm.models.js"
 import { PRAXIS_IDENTITY } from "../utils/identity.js"
 import { getMemory } from "../utils/memory.js"
 import { checkAgentLimit } from "../utils/agentLimit.js"
-import {deductCredits} from "../utils/deductCredits.js"
+import { deductCredits } from "../utils/deductCredits.js"
 
 export const codingAgent = async (state) => {
   try {
     await checkAgentLimit(state.userId, "coding")
-    await deductCredits(5,state.userId)
-    
+
+
     const intentllm = getllmModel("intent")
     const llm = getllmModel("coding")
 
@@ -142,7 +142,7 @@ ${PRAXIS_IDENTITY}
 
 User request:
 ${state.prompt}`)
-
+    await deductCredits(5, state.userId)
     return { ...state, aiResponse: response.content }
   } catch (error) {
     console.log("codeAgent error:", error);
