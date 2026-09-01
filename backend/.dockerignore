@@ -1,0 +1,29 @@
+# Docker only reads the .dockerignore at the ROOT of the build context.
+# Every image is built with `backend` as the context (see deploy.yaml), so this
+# is the file that counts — the ones inside gateway/ and services/ are ignored.
+
+# Secrets — must never end up in an image layer
+.env
+.env.*
+*.env
+**/.env
+**/.env.*
+*.pem
+*.key
+services/auth/serviceAccountKey.json
+
+# Dependencies — the Dockerfile runs npm install inside the image
+node_modules
+**/node_modules
+
+# Docker + git files
+.git
+.gitignore
+.dockerignore
+**/.dockerignore
+Dockerfile
+**/Dockerfile
+docker-compose.yml
+
+# Logs
+*.log
