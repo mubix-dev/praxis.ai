@@ -157,6 +157,9 @@ jobs:
 
       - name: Build Frontend
         working-directory: ./frontend
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_SERVER_URL: ${{secrets.VITE_SERVER_URL}}
         run: |
           npm install
           npm run build
