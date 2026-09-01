@@ -78,6 +78,7 @@ Return ONLY valid JSON — no markdown fences, no text before or after — in ex
   "files": [
     { "path": "filename.ext", "language": "html|css|javascript|jsx|...", "content": "full file content" }
   ],
+  "preview": "ONE self-contained HTML document string that runs the app inside an iframe: inline the CSS in a <style> tag and the JS in a <script> tag. For framework apps, provide a CDN-based standalone equivalent ONLY if it will genuinely work (e.g. React via unpkg UMD + babel-standalone). If a fully working preview is not possible, set preview to an empty string — never output a broken or partial preview.",
   "explanation": "2-4 sentences of markdown: what was built and how to use it"
 }
 
@@ -92,21 +93,6 @@ ${artifactContext ? "\nIf the user is asking to MODIFY the current project below
 
 User request:
 ${state.prompt}`
-
-      // The preview is just index.html with the css and js inlined, so build it
-      // here instead of making the model write the whole site a second time.
-      const buildPreview = (artifact) => {
-        const find = (name) => artifact.files.find((f) => f.path.endsWith(name))?.content || ""
-        const html = find(".html")
-        if (!html) return ""
-        const css = find(".css")
-        const js = find(".js")
-        // Replacements are passed as functions so that "$" in the css/js (prices,
-        // template literals) isn't treated as a regex substitution pattern.
-        return html
-          .replace(/<link[^>]+\.css[^>]*>/gi, () => (css ? `<style>\n${css}\n</style>` : ""))
-          .replace(/<script[^>]+src=["'][^"']+\.js["'][^>]*><\/script>/gi, () => (js ? `<script>\n${js}\n</script>` : ""))
-      }
 
       const parseArtifact = (content) => {
         let raw = typeof content === "string" ? content : String(content)
@@ -130,7 +116,7 @@ ${state.prompt}`
       if (artifact) {
         return {
           ...state,
-          artifact: { ...artifact, preview: buildPreview(artifact) },
+          artifact,
           aiResponse: `${artifact.explanation}\n\n*Open the artifact panel to view the code and live preview.*`,
         }
       }
