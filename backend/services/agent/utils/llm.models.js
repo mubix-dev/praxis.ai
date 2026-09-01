@@ -27,11 +27,11 @@ export const getllmModel = (agent)=>{
         case "search":
             return groq;
         case "coding":
-            return openrouter;
+            return groq;
         case "pdf":
             return groq
         case "ppt":
-            return groq
+            return gemini
         case "imageAnalyzer":
             return gemini
         case "image":
