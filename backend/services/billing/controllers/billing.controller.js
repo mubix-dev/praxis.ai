@@ -1,6 +1,5 @@
 import Stripe from "stripe";
 import Credits from "../models/credits.model.js";
-import ProcessedEvent from "../models/processedEvent.model.js";
 
 let stripe;
 const getStripe = () => {
@@ -134,101 +133,37 @@ const checkout = async (req, res) => {
   }
 };
 
-// Stripe fires this for immediate card payments; delayed payment methods
-// (bank debits and the like) only ever fire the async variant.
-const PAID_EVENTS = new Set([
-  "checkout.session.completed",
-  "checkout.session.async_payment_succeeded",
-]);
-
 const stripeWebhook = async (req, res) => {
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
-
-  if (!secret) {
-    console.error("stripeWebhook: STRIPE_WEBHOOK_SECRET is not set");
-    return res.status(500).json({ message: "Webhook not configured" });
-  }
-
-  // Verification failures are unfixable by retrying, so they're kept separate
-  // from processing failures below.
-  let event;
   try {
-    event = getStripe().webhooks.constructEvent(
+    const stripe = getStripe();
+    const signature = req.headers["stripe-signature"];
+    const event = stripe.webhooks.constructEvent(
       req.body,
-      req.headers["stripe-signature"],
-      secret,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET,
     );
-  } catch (error) {
-    console.error("stripeWebhook: signature verification failed:", error.message);
-    return res.status(400).json({ message: "Webhook error" });
-  }
 
-  try {
-    if (!PAID_EVENTS.has(event.type)) {
-      console.log(`stripeWebhook: ignoring ${event.type} (${event.id})`);
-      return res.status(200).json({ received: true, ignored: event.type });
-    }
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object;
+      const userId = session.metadata?.userId;
+      const creditsToAdd = Number(session.metadata?.credits);
 
-    const session = event.data.object;
-    const userId = session.metadata?.userId;
-    const creditsToAdd = Number(session.metadata?.credits);
-
-    if (!userId || !Number.isFinite(creditsToAdd) || creditsToAdd <= 0) {
-      console.error(
-        `stripeWebhook: ${event.id} has unusable metadata`,
-        session.metadata,
-      );
-      return res.status(200).json({ received: true, credited: 0 });
-    }
-
-    // Claim the event before crediting: a duplicate key means a retry or a
-    // replay of something we already applied.
-    try {
-      await ProcessedEvent.create({ eventId: event.id });
-    } catch (error) {
-      if (error.code === 11000) {
-        console.log(`stripeWebhook: ${event.id} already applied, skipping`);
-        return res.status(200).json({ received: true, duplicate: true });
+      if (userId && creditsToAdd) {
+        await Credits.findOneAndUpdate(
+          { userId },
+          { $inc: { credits: creditsToAdd } },
+          { upsert: true },
+        );
+        console.log(`stripeWebhook: added ${creditsToAdd} credits to ${userId}`);
+      } else {
+        console.log("stripeWebhook: session had no userId/credits in metadata");
       }
-      throw error;
     }
 
-    let updated;
-    try {
-      // $inc can't carry the schema's 50-credit default on an upsert, so make
-      // sure the row exists at the baseline first.
-      await Credits.updateOne(
-        { userId },
-        { $setOnInsert: { credits: 50 } },
-        { upsert: true },
-      );
-
-      // No MAX_CREDITS check here on purpose: the card has already been
-      // charged, so capping would take the money without delivering. The cap
-      // belongs at checkout, where it is.
-      updated = await Credits.findOneAndUpdate(
-        { userId },
-        { $inc: { credits: creditsToAdd } },
-        { new: true },
-      );
-    } catch (error) {
-      // Release the claim, otherwise Stripe's retry sees a duplicate and the
-      // credit is lost for good.
-      await ProcessedEvent.deleteOne({ eventId: event.id }).catch(() => {});
-      throw error;
-    }
-
-    console.log(
-      `stripeWebhook: ${event.id} credited ${creditsToAdd} to ${userId}, balance now ${updated.credits}`,
-    );
-
-    return res
-      .status(200)
-      .json({ received: true, credited: creditsToAdd, balance: updated.credits });
+    return res.status(200).json({ received: true });
   } catch (error) {
-    // Verified but not applied — 500 so Stripe retries and the credit isn't lost.
-    console.error(`stripeWebhook: failed to process ${event.id}:`, error);
-    return res.status(500).json({ message: "Webhook processing failed" });
+    console.log("stripeWebhook error:", error.message);
+    return res.status(400).json({ message: "Webhook error" });
   }
 };
 
