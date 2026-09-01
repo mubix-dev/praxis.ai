@@ -34,6 +34,8 @@ export const getllmModel = (agent)=>{
             return groq
         case "imageAnalyzer":
             return gemini
+        case "image":
+            return gemini
         default:
             return groq;
     }
