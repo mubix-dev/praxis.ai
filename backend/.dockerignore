@@ -10,7 +10,9 @@
 **/.env.*
 *.pem
 *.key
-services/auth/serviceAccountKey.json
+# NOTE: services/auth/serviceAccountKey.json is deliberately NOT ignored — the
+# auth service imports it at runtime, so it has to be in the image. It is still
+# kept out of git by .gitignore.
 
 # Dependencies — the Dockerfile runs npm install inside the image
 node_modules
