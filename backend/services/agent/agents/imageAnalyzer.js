@@ -7,7 +7,7 @@ import {deductCredits} from "../utils/deductCredits.js"
 export const imageAnalyzer = async (state) => {
     try {
         await checkAgentLimit(state.userId, "image")
-        await deductCredits(3,state.userId)
+        
 
         const llm = getllmModel("imageAnalyzer")
 
@@ -49,6 +49,8 @@ Security rules:
 
         // remove the uploaded temp file once processed
         await fs.unlink(state.file.path).catch(() => {})
+
+        await deductCredits(3,state.userId)
 
         return { ...state, aiResponse: response.content }
     } catch (error) {
