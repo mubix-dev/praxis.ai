@@ -10,7 +10,6 @@ function useGetCredits() {
     if (!userData) return;
     const getUserCredits = async () => {
       const data = await getCredits();
-      console.log(data)
       dispatch(setCredits(data?.credits))
     };
 
