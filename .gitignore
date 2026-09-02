@@ -38,4 +38,3 @@ Thumbs.db
 /client/coverage/
 .nyc_output/
 
-backend/services/auth/serviceAccountKey.json
