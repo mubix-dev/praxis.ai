@@ -79,7 +79,7 @@ Question: ${state.prompt?.trim() || "Summarize this document."}`),
     const response = await llm.invoke(messages);
 
     await fs.promises.unlink(state.file.path).catch(() => {});
-
+    await deductCredits(5,state.userId)
     return { ...state, aiResponse: response.content };
   } catch (error) {
     console.log("pdfRagAgent error:", error);
