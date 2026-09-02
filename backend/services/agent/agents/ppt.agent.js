@@ -67,7 +67,7 @@ ${state.prompt}`);
     );
 
     const viewUrl = await getFromS3(filename, 24 * 60 * 60);
-
+    await deductCredits(5,state.userId)
     return {
       ...state,
       aiResponse: `Your presentation is ready! 📊\n\n**${pptData.title}**\n${pptData.summary || ""}\n\n[⬇ Download PPT](${viewUrl})\n\n*This link expires in 24 hours — download the file to keep it.*`,
