@@ -14,7 +14,7 @@ export const chatAgent = async (state) => {
   try {
    
     await checkAgentLimit(state.userId, "chat")
-    await deductCredits(2,state.userId)
+    
 
     const llm = getllmModel("chat");
     const sysPrompt = `You are Praxis, an intelligent AI assistant that helps with questions, explanations, brainstorming and everyday tasks.
@@ -76,6 +76,7 @@ Remember: the user chose Praxis to save time. Make every reply feel effortless t
     messages.push(new HumanMessage(state.prompt));
     const response = await llm.invoke(messages);
 
+    await deductCredits(2,state.userId)
     return {
       ...state,
       aiResponse: response.content,
