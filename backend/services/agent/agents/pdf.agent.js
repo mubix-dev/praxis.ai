@@ -65,7 +65,7 @@ ${state.prompt}`);
     await uploadToS3(filename, buffer, "application/pdf");
 
     const viewUrl = await getFromS3(filename, 24 * 60 * 60);
-
+    await deductCredits(5,state.userId)
     return {
       ...state,
       aiResponse: `Your PDF is ready! 📄\n\n**${docData.title}**\n${docData.summary || ""}\n\n[👁 View PDF](${viewUrl})\n\n*This link expires in 24 hours — download the file to keep it.*`,
