@@ -13,7 +13,7 @@ export const searchAgent = async (state) => {
             .join("\n")
 
         const wantsImages = /image|photo|picture|show me|what does .* look like/i.test(state.prompt)
-
+        await deductCredits(1, state.userId)
         return { ...state, searchResults, images: wantsImages ? data.images || [] : [] }
     } catch (error) {
         console.log("searchAgent error:", error)
