@@ -59,7 +59,7 @@ ${state.prompt}`);
     await uploadToS3(filename, buffer, contentType);
 
     const downloadUrl = await getFromS3(filename, 7 * 24 * 60 * 60);
-
+    await deductCredits(5,state.userId)
     return {
       ...state,
       images: [downloadUrl],
