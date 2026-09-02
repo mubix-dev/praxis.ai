@@ -39,3 +39,6 @@ Thumbs.db
 .nyc_output/
 
 backend/services/auth/serviceAccountKey.json
+
+# firebase admin keys — never commit these
+*firebase-adminsdk*.json
